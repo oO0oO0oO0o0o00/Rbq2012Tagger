@@ -4,7 +4,12 @@ Quick tagging utility for local pictures built with Flutter.
 
 Focuses on convenient tagging of local pictures from any folders, targeting PC and Android, featuring one-key shortcuts and keyboard navigation.
 
-Currently still in progress. Not planning to update for the next month as my P0 demand is already fulfilled.
+Currently still in progress. Not planning to update for the next month as my P0 demand is already fulfilled. If you somehow need it, download from the Releases section in the page.
+
+## Screenshots
+
+<img src="screenshots/scr00_contents.png" alt="screenshot" width="320"/>
+<img src="screenshots/scr01_homepage.png" alt="screenshot" width="320"/>
 
 ## Roadmap
 
