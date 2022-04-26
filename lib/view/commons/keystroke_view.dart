@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// Representation of a keystroke.
 class KeystrokeView extends StatelessWidget {
   const KeystrokeView({Key? key, required this.keystroke}) : super(key: key);
   final LogicalKeyboardKey keystroke;

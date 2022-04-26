@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Background - foreground color pairs used for tags.
 class ColorSpec {
   final String name;
   final Color background;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// A tag-like view.
 class TagView extends StatelessWidget {
   const TagView({
     Key? key,

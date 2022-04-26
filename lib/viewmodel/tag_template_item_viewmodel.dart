@@ -1,3 +1,0 @@
-// class TagTemplateItemViewModel {
-//   String model;
-// }

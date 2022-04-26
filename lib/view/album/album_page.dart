@@ -30,13 +30,14 @@ class AlbumPage extends StatefulWidget {
 }
 
 class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
-  late final AlbumViewModel model = AlbumViewModel(widget.path);
+  late final AlbumViewModel _viewModel = AlbumViewModel(widget.path);
   late final _tabController = TabController(length: 2, vsync: this);
   bool _loadingDB = false;
   bool _loadingContents = false;
   bool _showSideTab = true;
   int _sideTabIndex = 0;
   final _sideTabKey = GlobalKey();
+  final _bodyKey = GlobalKey();
 
   @override
   void initState() {
@@ -47,10 +48,54 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider.value(
-      value: model,
+      value: _viewModel,
       child: isPC() ? _buildForPC(context) : _buildForMobile(context));
 
-  Widget _buildForPC(BuildContext context) => Material(child: _buildBody(true));
+  Widget _buildForPC(BuildContext context) => Material(
+          child: (bool isPC) {
+        // Side tab can be hidden. When hidden, still build it
+        // and put it some where or its state would be recycled.
+        final sideTab = TabBarView(
+          key: _sideTabKey,
+          controller: _tabController,
+          children: [
+            TagTemplatesView(
+              onClickTag: _onClickTag,
+            ),
+            BulkTagsView(
+              onClickTag: (tag) {},
+            ),
+          ],
+        );
+        // A stack is used to show progress bar above.
+        return Stack(children: [
+          // Basically it's Row([side bar, MultiSplitView([side tab, body])]).
+          Row(children: [
+            AlbumPageSidebar(
+              selectedIndex: _sideTabIndex,
+              tabIcons: const [
+                Icon(Icons.bookmarks_outlined),
+                Icon(Icons.fact_check_outlined)
+              ],
+              actionIcons: const [SortIcon(offset: Offset(64, 0))],
+              onSelectSideTab: _onSelectTab,
+            ),
+            Expanded(
+              // `MultiSplitView` does not play well with `Offstage`.
+              child: _showSideTab
+                  ? MultiSplitView(
+                      children: [sideTab, AlbumBody(key: _bodyKey)],
+                      initialWeights: const [.2, .8],
+                    )
+                  : Stack(children: [
+                      Offstage(offstage: true, child: sideTab),
+                      AlbumBody(key: _bodyKey)
+                    ]),
+            ),
+          ]),
+          if (_loadingDB || _loadingContents) const LinearProgressIndicator(),
+        ]);
+      }(true));
 
   Widget _buildForMobile(BuildContext context) => Scaffold(
       appBar: AppBar(
@@ -59,61 +104,18 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
                 Text(viewModel.pathForDisplay)),
         actions: const [SortIcon()],
       ),
-      body: _buildBody(false));
-
-  Widget _buildBody(bool isPC) {
-    final sideTab = TabBarView(
-      key: _sideTabKey,
-      controller: _tabController,
-      children: [
-        TagTemplatesView(
-          onClickTag: _onClickTag,
-        ),
-        BulkTagsView(
-          onClickTag: (tag) {},
-        ),
-      ],
-    );
-    return Stack(children: [
-      Row(children: [
-        AlbumPageSidebar(
-          selectedIndex: _sideTabIndex,
-          tabIcons: const [
-            Icon(Icons.bookmarks_outlined),
-            Icon(Icons.fact_check_outlined)
-          ],
-          actionIcons: const [SortIcon(offset: Offset(64, 0))],
-          onSelectSideTab: _onSelectTab,
-        ),
-        Expanded(
-          child: _showSideTab
-              ? MultiSplitView(
-                  children: [sideTab, const AlbumBody()],
-                  initialWeights: const [.2, .8],
-                )
-              : Stack(children: [
-                  Offstage(
-                    offstage: true,
-                    child: sideTab,
-                  ),
-                  const AlbumBody()
-                ]),
-        ),
-      ]),
-      if (_loadingDB || _loadingContents) const LinearProgressIndicator(),
-    ]);
-  }
+      body: AlbumBody(key: _bodyKey));
 
   Future<void> _loadContents(BuildContext context) async {
     if (_loadingContents) return;
-    final album = model;
+    final album = _viewModel;
     setState(() => _loadingContents = true);
     await album.loadContents();
     setState(() => _loadingContents = false);
   }
 
   Future<void> _loadDB(BuildContext context) async {
-    final album = model;
+    final album = _viewModel;
     if (_loadingDB || album.dbReady) return;
     setState(() => _loadingDB = true);
     if (!await album.isManaged()) {
@@ -131,9 +133,12 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
     setState(() => _loadingDB = false);
   }
 
-  void _onClickTag(String tag) => model.addTagToSelected(tag);
+  void _onClickTag(String tag) => _viewModel.controller.addTagToSelected(tag);
 
   void _onSelectTab(int index) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      _tabController.index = index;
+    });
     if (index == _sideTabIndex) {
       setState(() => _showSideTab = !_showSideTab);
     } else {
@@ -141,7 +146,6 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
         _showSideTab = true;
         _sideTabIndex = index;
       });
-      _tabController.index = index;
     }
   }
 }

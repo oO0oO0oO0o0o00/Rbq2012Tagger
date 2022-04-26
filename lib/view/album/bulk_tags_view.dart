@@ -4,15 +4,16 @@ import 'package:provider/provider.dart';
 
 import '../../viewmodel/album/album_viewmodel.dart';
 import 'album_item_tag_view.dart';
-import 'scalable_card_view.dart';
+import '../commons/scalable_card_view.dart';
 
+/// The view containing the intersection or union of tags of selected items.
 class BulkTagsView extends StatefulWidget {
   const BulkTagsView({
     Key? key,
     required this.onClickTag,
   }) : super(key: key);
 
-  final Function(String tag) onClickTag;
+  final void Function(String tag) onClickTag;
 
   @override
   State<BulkTagsView> createState() => _BulkTagsViewState();
@@ -20,6 +21,7 @@ class BulkTagsView extends StatefulWidget {
 
 class _BulkTagsViewState extends State<BulkTagsView>
     with AutomaticKeepAliveClientMixin {
+  /// Dense state required by [ToggleButtons].
   final isSelected = [true, false];
 
   @override
@@ -27,10 +29,11 @@ class _BulkTagsViewState extends State<BulkTagsView>
     super.build(context);
     return Consumer<AlbumViewModel>(builder: (context, albumViewModel, child) {
       final theme = Theme.of(context);
-      final selections = albumViewModel.selectionController.selections;
+      final selections = albumViewModel.controller.selections;
       return ScalableCardView(
         builder: (constraint) => selections.isEmpty
             ? const [Text("(no pictures selected)")]
+            // Why 121? It's magic.
             : selections.length > 121
                 ? const [
                     Text("(too many selected, use Filter & Actions instead)")
@@ -68,14 +71,15 @@ class _BulkTagsViewState extends State<BulkTagsView>
       ConstrainedBox(
         constraints: BoxConstraints(minHeight: constraint.maxHeight / 2),
         child: Tags(
-          itemCount: albumViewModel.getTagsOfSelectedItemsCount(isSelected[0]),
+          itemCount: albumViewModel.controller
+              .getTagsOfSelectedItemsCount(isSelected[0]),
           itemBuilder: (int index) {
-            final item =
-                albumViewModel.getTagOfSelectedItemsAt(index, isSelected[0]);
+            final item = albumViewModel.controller
+                .getTagOfSelectedItemsAt(index, isSelected[0]);
             return AlbumItemTagView(
                 item: item,
                 onClose: (String tag) =>
-                    albumViewModel.removeTagFromSelected(tag));
+                    albumViewModel.controller.removeTagFromSelected(tag));
           },
         ),
       )

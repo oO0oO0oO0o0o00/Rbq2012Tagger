@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// A squared color preview like VS Code's.
 class ColorSquare extends StatelessWidget {
   final Color color;
 

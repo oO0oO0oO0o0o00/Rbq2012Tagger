@@ -1,13 +1,12 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
-import 'gloabl_db_service.dart';
+import 'global_db_service.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../model/global/model.dart';
 
+/// Service for user-defined tag templates.
 class TagTemplatesService {
-  static const schemaVersion = 1;
-
   static Future<void> createTable(Database db, int version) async {
     await db.execute('CREATE TABLE ${TagTemplateForDB.tableName} ('
         '${TagTemplateForDB.colName} TEXT PRIMARY KEY, '
@@ -22,12 +21,18 @@ class TagTemplatesService {
   }
 
   static Future<List<TagTemplate>> getAll() async {
+    // Get a list of all tag templates and convert to name-to-object map.
     final map = Map.fromEntries((await (await GlobalDBService.getDB())
             .query(TagTemplateForDB.tableName))
         .map((e) {
       final model = TagTemplateForDB.fromMap(e);
       return MapEntry(model.data.name, model);
     }));
+    // Instead of using recursive mysql query,
+    // simply restore the linked list order here.
+    // As it can be expected that N(tagTemplates) <= C
+    // (there won't be too many tag templates),
+    // O(n) => O(C).
     TagTemplateForDB? node;
     List<TagTemplate> list = [];
     map.forEach((key, value) {
@@ -40,6 +45,8 @@ class TagTemplatesService {
       list.add(node!.data);
       node = node!.next;
     }
+    // These debug code should be removed after ensuring the consistency
+    // of manipulations over the linked list structure.
     if (list.length != map.length) {
       debugPrint("WTF");
       map.forEach((key, value) {
@@ -50,6 +57,8 @@ class TagTemplatesService {
     return list;
   }
 
+  /// Move (reorder) a tag template.
+  /// Updates to other fields shall be done with [update].
   static Future<void> move(TagTemplate item, String? after) async {
     await (await GlobalDBService.getDB()).transaction((txn) async {
       await txn.rawUpdate(
@@ -72,6 +81,7 @@ class TagTemplatesService {
     });
   }
 
+  /// Update a tag template. Reordering shall be done using [move].
   static Future<bool> update(TagTemplate old, TagTemplate updated) async {
     bool ok = false;
     await (await GlobalDBService.getDB()).transaction((txn) async {

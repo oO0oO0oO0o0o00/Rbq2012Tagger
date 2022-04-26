@@ -2,16 +2,18 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tagger/model/global/color_spec.dart';
+import 'package:provider/provider.dart';
+
+import '../../model/global/color_spec.dart';
 import '../../model/global/model.dart';
+import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/color_preview.dart';
 import '../commons/dialogs.dart';
-import 'package:provider/provider.dart';
-import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/simple_list_item.dart';
 import 'edit_name_field.dart';
 import 'edit_shortcut_field.dart';
 
+/// View for an editable tag in Tags Management page.
 class TagItemView extends StatelessWidget {
   final TagTemplatesViewModel viewModel;
   final TagTemplate item;
@@ -27,19 +29,14 @@ class TagItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return
-        //  Row(children: [
-        //   SizedBox(width: 60, child: TextField()),
-        //   SizedBox(width: 60, child: TextField())
-        // ]);
-        SimpleListItem(
-            builder: (hovered) => ChangeNotifierProvider.value(
-                value: viewModel,
-                builder: (context, child) => Consumer<TagTemplatesViewModel>(
-                    builder: (context, viewModel, child) =>
-                        item.name == viewModel.editingItem?.previous.name
-                            ? _buildEditingItem(hovered)
-                            : _buildNormalItem(context, hovered))));
+    return SimpleListItem(
+        builder: (hovered) => ChangeNotifierProvider.value(
+            value: viewModel,
+            builder: (context, child) => Consumer<TagTemplatesViewModel>(
+                builder: (context, viewModel, child) =>
+                    item.name == viewModel.editingItem?.previous.name
+                        ? _buildEditingItem(hovered)
+                        : _buildNormalItem(context, hovered))));
   }
 
   void _commitEditing() => viewModel.commitEditing();

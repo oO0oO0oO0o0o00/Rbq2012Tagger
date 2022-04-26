@@ -1,7 +1,8 @@
 import '../model/global/model.dart';
-import 'gloabl_db_service.dart';
+import 'global_db_service.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
+/// Service for recent albums.
 class RecentAlbumsService {
   static Future<void> createTable(Database db, int version) async {
     await db.execute('CREATE TABLE ${RecentAlbum.tableName} ('
@@ -14,11 +15,12 @@ class RecentAlbumsService {
         'ON ${RecentAlbum.tableName} (${RecentAlbum.colPinned})');
   }
 
+  /// Fetch a list of up to `maxCount` recent albums.
   static Future<List<RecentAlbum>> listRecent(int maxCount) async =>
       (await (await GlobalDBService.getDB())
-              // select all pinned items and some recent items
+              // Select all pinned items and some recent items
               // so that recent items should not make the amount
-              // of selected items to exceed a certain limit
+              // of selected items to exceed a certain limit.
               .rawQuery(
                   'WITH pinned_items ('
                   '  ${RecentAlbum.colPath}, '
@@ -42,6 +44,7 @@ class RecentAlbumsService {
           .map((e) => RecentAlbum.fromMap(e))
           .toList();
 
+  /// Add or update a recently opened album.
   static Future<void> insert(RecentAlbum item, int? maxCount) async {
     final db = await GlobalDBService.getDB();
     await db.rawInsert(
@@ -55,9 +58,9 @@ class RecentAlbumsService {
         '), 0))',
         [item.path, item.lastOpenedSerialized, item.path]);
     if (maxCount != null) {
-      // remove some least recent items
+      // Remove some least recent items
       // so that recent items should not make the amount
-      // of all items to exceed a certain limit
+      // of all items to exceed a certain limit.
       await db.execute(
           'DELETE FROM ${RecentAlbum.tableName}'
           '  WHERE ${RecentAlbum.colPinned} == 0'
@@ -88,6 +91,7 @@ class RecentAlbumsService {
       await (await GlobalDBService.getDB()).delete(RecentAlbum.tableName,
           where: "${RecentAlbum.colPath} == ?", whereArgs: [item.path]);
 
+  /// Pin or unpin album.
   static Future<void> updatePinnedState(RecentAlbum item) async =>
       await (await GlobalDBService.getDB()).update(
           RecentAlbum.tableName, item.toMap(),

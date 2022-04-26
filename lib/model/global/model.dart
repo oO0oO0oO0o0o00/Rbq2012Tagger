@@ -1,5 +1,9 @@
-import 'package:tagger/model/global/color_spec.dart';
+import 'color_spec.dart';
 
+/// Classes in this file hold information
+/// stored in the main database of the app.
+
+/// A record of recently opened album.
 class RecentAlbum {
   static const tableName = "recent";
   static const colPath = "path";
@@ -26,6 +30,7 @@ class RecentAlbum {
       };
 }
 
+/// Wrapper around user-defined tag template [TagTemplate].
 class TagTemplateForDB {
   static const String tableName = "tag";
   static const String colName = "name";
@@ -34,7 +39,15 @@ class TagTemplateForDB {
   static const colColor = "color";
 
   final TagTemplate data;
+
+  /// Reference to the previous item as tag templates are ordered by user.
+  ///
+  /// Added for storing as linked list in mysql.
   final String? after;
+
+  /// Reference to the next item.
+  ///
+  /// Used to restore the linked list by code.
   TagTemplateForDB? next;
 
   TagTemplateForDB(this.data, this.after);
@@ -54,9 +67,14 @@ class TagTemplateForDB {
       };
 }
 
+/// User-defined template for tag.
 class TagTemplate {
   String name;
+
+  /// Keyboard shortcut.
   String? shortcut;
+
+  /// Color specification containing background and foreground color.
   ColorSpec color;
 
   TagTemplate.from(TagTemplate another)

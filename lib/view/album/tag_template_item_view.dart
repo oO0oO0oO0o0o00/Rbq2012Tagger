@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import '../../model/global/model.dart';
 import '../commons/tag_view.dart';
 
+/// View of a tag template.
+///
+/// Has:
+///  * Tag-like looking
+///  * name and color specification
+///  * shortcut note
+/// See also: [AlbumItemTagView]
 class TagTemplateItemView extends StatelessWidget {
   const TagTemplateItemView({Key? key, required this.item, required this.onTap})
       : super(key: key);
@@ -23,7 +30,7 @@ class TagTemplateItemView extends StatelessWidget {
             Text(item.name, style: textStyle),
             if (item.shortcut != null) ...[
               const SizedBox(width: 12),
-              const Icon(Icons.keyboard),
+              Icon(Icons.keyboard, color: item.color.foreground),
               const SizedBox(width: 4),
               Text(item.shortcut!, style: textStyle)
             ]

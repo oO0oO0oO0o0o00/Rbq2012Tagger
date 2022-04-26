@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodel/tag_templates_viewmodel.dart';
 import 'tag_item_view.dart';
 
+/// Tags management page for managing tag templates.
 class TagsMgmtPage extends StatelessWidget {
   const TagsMgmtPage({
     Key? key,
@@ -42,7 +43,7 @@ class TagsMgmtPage extends StatelessWidget {
                     builder: (context, child) => _buildBody()))));
   }
 
-  Consumer<TagTemplatesViewModel> _buildBody() {
+  Widget _buildBody() {
     return Consumer<TagTemplatesViewModel>(
         builder: (context, viewModel, child) => Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -52,8 +53,7 @@ class TagsMgmtPage extends StatelessWidget {
                 ]));
   }
 
-  ReorderableListView _buildList(
-      TagTemplatesViewModel viewModel, BuildContext context) {
+  Widget _buildList(TagTemplatesViewModel viewModel, BuildContext context) {
     return ReorderableListView.builder(
       itemBuilder: (context, index) => TagItemView(
           viewModel: viewModel,
@@ -68,7 +68,7 @@ class TagsMgmtPage extends StatelessWidget {
     );
   }
 
-  SizedBox _buildAddButton(BuildContext context) {
+  Widget _buildAddButton(BuildContext context) {
     return SizedBox(
         height: 48,
         child: TextButton(

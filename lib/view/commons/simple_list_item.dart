@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// A simple list item view with hover effect.
 class SimpleListItem extends StatefulWidget {
   final Function() onTap;
   final Function(bool hovered)? onHover;

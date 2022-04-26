@@ -6,8 +6,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:path/path.dart' as path;
 
+/// Service for app-wide database.
 class GlobalDBService {
-  static const schemaVersion = 1;
+  static const _schemaVersion = 1;
 
   static String get _dbPath =>
       path.join(File(Platform.resolvedExecutable).parent.path, "app.db");
@@ -18,7 +19,7 @@ class GlobalDBService {
     sqfliteFfiInit();
     return _db ??= await databaseFactoryFfi.openDatabase(_dbPath,
         options: OpenDatabaseOptions(
-            version: schemaVersion,
+            version: _schemaVersion,
             onCreate: (db, version) async {
               await RecentAlbumsService.createTable(db, version);
               await TagTemplatesService.createTable(db, version);

@@ -1,14 +1,18 @@
-import 'package:flutter/foundation.dart';
-import 'package:tagger/viewmodel/common/selectable_list_controller.dart';
-import 'tag_templates_viewmodel.dart';
-import 'tagged_viewmodel.dart';
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 
 import '../../model/model.dart';
 import '../../service/album_service.dart';
+import '../common/selectable_list_controller.dart';
+import 'tag_templates_viewmodel.dart';
+import 'tagged_viewmodel.dart';
 
+/// View model for an [AlbumItem].
 class AlbumItemViewModel with ChangeNotifier, Selectable {
   final AlbumItem _model;
+
+  /// Tags applied to the item.
   final List<TaggedViewModel> _tags = [];
 
   AlbumItemViewModel(this._model);

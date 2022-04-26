@@ -4,12 +4,14 @@ import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../util/locked_object.dart';
-
+/// Service that wraps around file system
+/// and database operations on an `Album`.
 class AlbumService {
-  static const imageExtensions = [".png", ".jpg"];
+  /// Explicitly defined valid extension names for pictures.
+  static const _pictureExtensions = [".png", ".jpg"];
 
-  static const schemaVersion = 1;
+  /// Version of database schema.
+  static const _schemaVersion = 1;
 
   static Album getAlbum(String path) => Album(path);
 
@@ -17,9 +19,9 @@ class AlbumService {
     sqfliteFfiInit();
     late Database db;
     await album.instanceLock.synchronized(() async => db =
-        album.db ??= await databaseFactoryFfi.openDatabase(getDbPath(album),
+        album.db ??= await databaseFactoryFfi.openDatabase(_getDbPath(album),
             options: OpenDatabaseOptions(
-                version: schemaVersion,
+                version: _schemaVersion,
                 onCreate: (db, version) async {
                   await db.execute('CREATE TABLE ${Tagged.tableName} ('
                       '${Tagged.colName} TEXT, '
@@ -38,10 +40,10 @@ class AlbumService {
   static Future<void> loadContents(Album album) async {
     album.contents ??= await Directory(album.path)
         .list()
-        .asyncMap((entity) async =>
-            (entity is File && imageExtensions.contains(extension(entity.path)))
-                ? AlbumItem(entity.path, (await entity.stat()).modified)
-                : null)
+        .asyncMap((entity) async => (entity is File &&
+                _pictureExtensions.contains(extension(entity.path)))
+            ? AlbumItem(entity.path, (await entity.stat()).modified)
+            : null)
         .where((album) => album != null)
         .map((album) => album!)
         .toList();
@@ -67,15 +69,15 @@ class AlbumService {
       1;
 
   static Future<bool> isManaged(Album album) async =>
-      File(getDbPath(album)).exists();
+      File(_getDbPath(album)).exists();
 
-  static Future<void> initDatabase(Album album) async {
-    await getDatabase(album);
-  }
+  static Future<void> initDatabase(Album album) async =>
+      await getDatabase(album);
 
-  static String getDbPath(Album album) =>
+  static String _getDbPath(Album album) =>
       join(album.path, "rbq2012.album.tags.db");
 
+  /// Load the intersection or union of sets of tags given pictures.
   static Future<Iterable<String>> loadTagsForPictures(
       Album album, List<String> pictures,
       {required bool intersectionMode}) async {

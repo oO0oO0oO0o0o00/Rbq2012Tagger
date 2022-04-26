@@ -3,6 +3,11 @@ import 'package:flutter/foundation.dart';
 import '../../model/global/model.dart';
 import '../../service/tag_templates_service.dart';
 
+/// View model for tag templates.
+///
+/// Different from the `TagTemplatesViewModel` in tags management,
+/// provides simple listing for tag templates as well as
+/// lookup and shortcut resolution.
 class TagTemplatesViewModel with ChangeNotifier {
   List<TagTemplate>? _cache;
   Map<String, TagTemplate>? _indexByName;

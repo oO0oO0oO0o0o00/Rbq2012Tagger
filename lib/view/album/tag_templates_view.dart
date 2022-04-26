@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tagger/viewmodel/album/album_viewmodel.dart';
 import 'package:flutter_tags/flutter_tags.dart';
 import 'package:provider/provider.dart';
 
-import '../../viewmodel/album/tag_templates_viewmodel.dart';
+import '../../viewmodel/album/album_viewmodel.dart';
 import '../commons/keystroke_view.dart';
-import 'scalable_card_view.dart';
+import '../commons/scalable_card_view.dart';
 import 'tag_template_item_view.dart';
 
+/// Tag templates panel.
 class TagTemplatesView extends StatelessWidget {
   const TagTemplatesView({
     Key? key,
@@ -27,10 +27,9 @@ class TagTemplatesView extends StatelessWidget {
       const SizedBox(height: 24),
       Consumer<AlbumViewModel>(
           builder: ((context, albumViewModel, child) => Tags(
-                itemCount: albumViewModel.tagTemplatesViewModel.getItemsCount(),
+                itemCount: albumViewModel.tagTemplates.getItemsCount(),
                 itemBuilder: (int index) {
-                  final item =
-                      albumViewModel.tagTemplatesViewModel.getItem(index);
+                  final item = albumViewModel.tagTemplates.getItem(index);
                   return TagTemplateItemView(
                     item: item,
                     onTap: () => onClickTag(item.name),
@@ -54,6 +53,7 @@ class TagTemplatesView extends StatelessWidget {
   }
 }
 
+/// Explanation for one or more keystroke.
 class _KeystrokesNoteView extends StatelessWidget {
   const _KeystrokesNoteView({
     Key? key,

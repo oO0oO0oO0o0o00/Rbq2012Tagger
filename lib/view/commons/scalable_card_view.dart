@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// A scalable card view.
+///
+/// Matches parent when there is enough space,
+/// wrap content and scrolls when there is not.
 class ScalableCardView extends StatelessWidget {
   final List<Widget>? children;
   final List<Widget> Function(BoxConstraints constraint)? builder;

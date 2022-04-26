@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tuple/tuple.dart';
 
+/// Controller of a multiple-selectable list.
 class SelectableListController with ChangeNotifier {
   static final _arrows = {
     LogicalKeyboardKey.arrowLeft: const Tuple2(-1, 0),
@@ -15,17 +16,15 @@ class SelectableListController with ChangeNotifier {
 
   final bool isSingleSelection;
   int numCols = 1;
-  // bool isShiftPressed = false;
-  // bool isControlPressed = false;
   int _itemsCount = 0;
   int _selectionHead = 0;
   int _selectionTail = 0;
   final _selections = <int>[];
   List<int>? _immutableSelections;
-  final Function() changedNotifier;
+  final Function() onSelectionChanged;
 
   SelectableListController(
-      {this.isSingleSelection = false, required this.changedNotifier});
+      {this.isSingleSelection = false, required this.onSelectionChanged});
 
   int get singleSelection => _selectionTail;
   List<int> get selections =>
@@ -36,7 +35,7 @@ class SelectableListController with ChangeNotifier {
       {required bool isControlPressed, required bool isShiftPressed}) {
     _handleCtrl(index, isControlPressed: isControlPressed);
     _handleShiftAndClick(index, isShiftPressed: isShiftPressed);
-    changedNotifier();
+    onSelectionChanged();
   }
 
   void _handleShiftAndClick(int index, {required bool isShiftPressed}) {
@@ -93,13 +92,13 @@ class SelectableListController with ChangeNotifier {
     if (!isControlPressed || isShiftPressed) {
       _handleShiftAndClick(index, isShiftPressed: isShiftPressed);
     }
-    changedNotifier();
+    onSelectionChanged();
   }
 
   void clearSelection() {
     _selectionHead = _selectionTail = 0;
     _selections.clear();
-    changedNotifier();
+    onSelectionChanged();
   }
 
   void updateSelection(int index, Selectable item) {

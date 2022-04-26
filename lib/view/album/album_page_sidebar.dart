@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Side bar on the starting side of the album page
+/// containing side tab icons and action buttons.
 class AlbumPageSidebar extends StatelessWidget {
   final int selectedIndex;
   final List<Widget> tabIcons;

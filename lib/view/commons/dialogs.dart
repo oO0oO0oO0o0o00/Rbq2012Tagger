@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// Shows an async confirmation dialog.
 Future<bool?> showConfirmationDialog(BuildContext context,
     {String? title,
     required String content,

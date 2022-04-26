@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 
+/// Theme for [TabbedView] which is used for tabbing, mimicking VS Code's.
+/// Based on [TabbedView]'s built-in`MobileTheme`. It's a pill of mess.
 class TheTabbedViewTheme {
   static TabbedViewThemeData build(BuildContext context) {
     final theme = Theme.of(context);
