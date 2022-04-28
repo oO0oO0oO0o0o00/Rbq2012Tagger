@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../model/model.dart';
 import '../../service/album_service.dart';
 import '../common/selectable_list_controller.dart';
-import 'tag_templates_viewmodel.dart';
+import '../tag_templates_viewmodel.dart';
 import 'tagged_viewmodel.dart';
 
 /// View model for an [AlbumItem].

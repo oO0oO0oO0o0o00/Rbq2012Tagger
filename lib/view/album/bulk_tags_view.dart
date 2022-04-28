@@ -3,6 +3,7 @@ import 'package:flutter_tags/flutter_tags.dart';
 import 'package:provider/provider.dart';
 
 import '../../viewmodel/album/album_viewmodel.dart';
+import '../../viewmodel/tag_templates_viewmodel.dart';
 import 'album_item_tag_view.dart';
 import '../commons/scalable_card_view.dart';
 
@@ -27,20 +28,23 @@ class _BulkTagsViewState extends State<BulkTagsView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Consumer<AlbumViewModel>(builder: (context, albumViewModel, child) {
-      final theme = Theme.of(context);
-      final selections = albumViewModel.controller.selections;
-      return ScalableCardView(
-        builder: (constraint) => selections.isEmpty
-            ? const [Text("(no pictures selected)")]
-            // Why 121? It's magic.
-            : selections.length > 121
-                ? const [
-                    Text("(too many selected, use Filter & Actions instead)")
-                  ]
-                : _buildBody(theme, constraint, albumViewModel),
-      );
-    });
+    return Consumer<TagTemplatesViewModel>(
+      builder: (context, _, child) =>
+          Consumer<AlbumViewModel>(builder: (context, albumViewModel, child) {
+        final theme = Theme.of(context);
+        final selections = albumViewModel.controller.selections;
+        return ScalableCardView(
+          builder: (constraint) => selections.isEmpty
+              ? const [Text("(no pictures selected)")]
+              // Why 121? It's magic.
+              : selections.length > 121
+                  ? const [
+                      Text("(too many selected, use Filter & Actions instead)")
+                    ]
+                  : _buildBody(theme, constraint, albumViewModel),
+        );
+      }),
+    );
   }
 
   List<Widget> _buildBody(ThemeData theme, BoxConstraints constraint,

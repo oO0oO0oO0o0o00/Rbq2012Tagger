@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../model/global/color_spec.dart';
 import '../../model/global/model.dart';
+import '../../util/platform.dart';
 import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/color_preview.dart';
 import '../commons/dialogs.dart';
@@ -86,7 +87,7 @@ class TagItemView extends StatelessWidget {
       const SizedBox(width: 16),
       GestureDetector(onTap: _discardEditing, child: const Icon(Icons.clear)),
       GestureDetector(onTap: _commitEditing, child: const Icon(Icons.check)),
-      if (Platform.isWindows) const Icon(null)
+      if (isPC()) const Icon(null)
     ]);
   }
 

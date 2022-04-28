@@ -8,6 +8,8 @@ import '../service/tag_templates_service.dart';
 /// View model for tags management page.
 class TagTemplatesViewModel with ChangeNotifier {
   List<TagTemplate>? _cache;
+  Map<String, TagTemplate>? _indexByName;
+  Map<String, TagTemplate>? _indexByShortcut;
 
   EditingItemViewModel? _editingItem;
 
@@ -31,8 +33,26 @@ class TagTemplatesViewModel with ChangeNotifier {
     final cache = _cache;
     if (!reload && cache != null) return cache;
     final ret = _cache = await TagTemplatesService.getAll();
+    _indexByName = Map.fromEntries(ret.map((e) => MapEntry(e.name, e)));
+    _indexByShortcut = Map.fromEntries(ret
+        .where((element) => element.shortcut != null)
+        .map((e) => MapEntry(e.shortcut!, e)));
     notifyListeners();
     return ret;
+  }
+
+  TagTemplate? getByName(String tagName) {
+    final lookup = _indexByName;
+    if (lookup != null) return lookup[tagName];
+    _loadCache();
+    return null;
+  }
+
+  TagTemplate? getByShortcut(String shortcut) {
+    final lookup = _indexByShortcut;
+    if (lookup != null) return lookup[shortcut];
+    _loadCache();
+    return null;
   }
 
   /// Moves (Reorders) a tag template.

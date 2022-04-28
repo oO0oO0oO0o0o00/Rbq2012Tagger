@@ -4,6 +4,7 @@ import 'package:flutter_tags/flutter_tags.dart';
 import 'package:provider/provider.dart';
 
 import '../../viewmodel/album/album_viewmodel.dart';
+import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/keystroke_view.dart';
 import '../commons/scalable_card_view.dart';
 import 'tag_template_item_view.dart';
@@ -25,17 +26,19 @@ class TagTemplatesView extends StatelessWidget {
         style: Theme.of(context).textTheme.titleLarge,
       ),
       const SizedBox(height: 24),
-      Consumer<AlbumViewModel>(
-          builder: ((context, albumViewModel, child) => Tags(
-                itemCount: albumViewModel.tagTemplates.getItemsCount(),
-                itemBuilder: (int index) {
-                  final item = albumViewModel.tagTemplates.getItem(index);
-                  return TagTemplateItemView(
-                    item: item,
-                    onTap: () => onClickTag(item.name),
-                  );
-                },
-              ))),
+      Consumer<TagTemplatesViewModel>(
+        builder: (context, _, child) => Consumer<AlbumViewModel>(
+            builder: ((context, albumViewModel, child) => Tags(
+                  itemCount: albumViewModel.tagTemplates.getItemsCount(),
+                  itemBuilder: (int index) {
+                    final item = albumViewModel.tagTemplates.getItem(index);
+                    return TagTemplateItemView(
+                      item: item,
+                      onTap: () => onClickTag(item.name),
+                    );
+                  },
+                ))),
+      ),
       const SizedBox(height: 16),
       Column(mainAxisSize: MainAxisSize.min, children: const [
         _KeystrokesNoteView(

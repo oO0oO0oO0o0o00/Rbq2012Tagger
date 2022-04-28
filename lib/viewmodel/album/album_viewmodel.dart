@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 import '../../service/album_service.dart';
+import '../tag_templates_viewmodel.dart';
 import 'album_core_struct.dart';
 import 'album_item_viewmodel.dart';
 import 'album_items_sort_mode_viewmodel.dart';
 import 'album_controller.dart';
-import 'tag_templates_viewmodel.dart';
 
 /// View model for [AlbumPage].
 ///
@@ -22,9 +22,15 @@ class AlbumViewModel with ChangeNotifier {
   /// and highly UI-related functionalities.
   late final AlbumController controller;
 
-  AlbumViewModel(String path) : _albumCoreStruct = AlbumCoreStruct(path) {
+  AlbumViewModel(String path, {required TagTemplatesViewModel tagTemplates})
+      : _albumCoreStruct = AlbumCoreStruct(path, tagTemplates: tagTemplates) {
     controller = AlbumController(_albumCoreStruct)
       ..addListener(notifyListeners);
+    tagTemplates.addListener(() {
+      _albumCoreStruct.cache?.forEach((element) {
+        element?.updateTags(_albumCoreStruct.model, tagTemplates);
+      });
+    });
   }
 
   /// The mode with which items are sorted.

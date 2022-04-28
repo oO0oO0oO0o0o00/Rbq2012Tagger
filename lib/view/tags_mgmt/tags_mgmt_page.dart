@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tagger/util/platform.dart';
 import '../commons/dialogs.dart';
 import 'package:provider/provider.dart';
 
@@ -7,8 +8,13 @@ import 'tag_item_view.dart';
 
 /// Tags management page for managing tag templates.
 class TagsMgmtPage extends StatelessWidget {
+  final TagTemplatesViewModel tagTemplates;
+  final void Function() onClose;
+
   const TagsMgmtPage({
     Key? key,
+    required this.onClose,
+    required this.tagTemplates,
   }) : super(key: key);
 
   static const routeName = '/tags';
@@ -31,26 +37,42 @@ class TagsMgmtPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("Managing Tags"),
-        ),
-        body: Center(
-            child: SizedBox(
-                width: 400,
-                child: ChangeNotifierProvider(
-                    create: (context) => TagTemplatesViewModel(),
-                    builder: (context, child) => _buildBody()))));
+    return isPC()
+        ? Material(
+            child: Center(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+            ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
+                child: Row(children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back,
+                        color: Theme.of(context).hintColor),
+                    iconSize: 36,
+                    onPressed: onClose,
+                  ),
+                ])),
+            const SizedBox(height: 48),
+            _buildBody()
+          ])))
+        : Scaffold(
+            appBar: AppBar(
+              title: const Text("Managing Tags"),
+            ),
+            body: _buildBody());
   }
 
   Widget _buildBody() {
-    return Consumer<TagTemplatesViewModel>(
-        builder: (context, viewModel, child) => Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildList(viewModel, context),
-                  _buildAddButton(context)
-                ]));
+    return ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: ChangeNotifierProvider.value(
+            value: tagTemplates,
+            builder: (context, child) => Consumer<TagTemplatesViewModel>(
+                builder: (context, viewModel, child) => Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildList(viewModel, context),
+                          _buildAddButton(context)
+                        ]))));
   }
 
   Widget _buildList(TagTemplatesViewModel viewModel, BuildContext context) {

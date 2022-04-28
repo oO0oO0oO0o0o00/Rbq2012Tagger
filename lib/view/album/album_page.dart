@@ -5,6 +5,7 @@ import '../../viewmodel/album/album_arguments.dart';
 import '../../viewmodel/album/album_viewmodel.dart';
 import 'package:provider/provider.dart';
 
+import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/dialogs.dart';
 import 'album_body.dart';
 import 'album_page_sidebar.dart';
@@ -14,10 +15,12 @@ import 'tag_templates_view.dart';
 
 class AlbumPage extends StatefulWidget {
   final String path;
+  final TagTemplatesViewModel tagTemplates;
   final void Function() onOpened;
   final void Function() onFailure;
 
-  AlbumPage({Key? key, required AlbumArguments arguments})
+  AlbumPage(
+      {Key? key, required AlbumArguments arguments, required this.tagTemplates})
       : path = arguments.path,
         onOpened = arguments.onOpened,
         onFailure = arguments.onFailure,
@@ -30,7 +33,8 @@ class AlbumPage extends StatefulWidget {
 }
 
 class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
-  late final AlbumViewModel _viewModel = AlbumViewModel(widget.path);
+  late final AlbumViewModel _viewModel =
+      AlbumViewModel(widget.path, tagTemplates: widget.tagTemplates);
   late final _tabController = TabController(length: 2, vsync: this);
   bool _loadingDB = false;
   bool _loadingContents = false;
@@ -48,8 +52,11 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider.value(
-      value: _viewModel,
-      child: isPC() ? _buildForPC(context) : _buildForMobile(context));
+        value: widget.tagTemplates,
+        child: ChangeNotifierProvider.value(
+            value: _viewModel,
+            child: isPC() ? _buildForPC(context) : _buildForMobile(context)),
+      );
 
   Widget _buildForPC(BuildContext context) => Material(
           child: (bool isPC) {

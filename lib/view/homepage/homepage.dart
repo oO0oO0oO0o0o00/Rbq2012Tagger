@@ -14,9 +14,16 @@ class MyHomePage extends StatelessWidget {
   static const routeName = '/';
 
   final HomePageViewModel viewModel;
+
   final void Function(String path) onOpen;
 
-  const MyHomePage({Key? key, required this.onOpen, required this.viewModel})
+  final void Function() onOpenTagsMgmt;
+
+  const MyHomePage(
+      {Key? key,
+      required this.onOpen,
+      required this.onOpenTagsMgmt,
+      required this.viewModel})
       : super(key: key);
 
   void _selectAndOpen(BuildContext context) {
@@ -26,12 +33,8 @@ class MyHomePage extends StatelessWidget {
 
     final result = file.getDirectory();
     if (result != null) {
-      _open(context, result.path);
+      onOpen(result.path);
     }
-  }
-
-  void _open(BuildContext context, String path) {
-    onOpen(path);
   }
 
   @override
@@ -108,8 +111,7 @@ class MyHomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             TextButton(
-                onPressed: () => _selectAndOpen(context),
-                child: const Text("Manage Tags..."))
+                onPressed: onOpenTagsMgmt, child: const Text("Manage Tags..."))
           ],
         )
       ],
@@ -125,7 +127,7 @@ class MyHomePage extends StatelessWidget {
               item: recentAlbum == null
                   ? null
                   : RecentAlbumViewModel(recentAlbum),
-              onOpen: _open);
+              onOpen: onOpen);
         },
         shrinkWrap: true,
         itemCount: viewModel.getItemsCount());

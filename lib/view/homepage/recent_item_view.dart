@@ -18,7 +18,7 @@ class RecentItemView extends StatelessWidget {
 
   final HomePageViewModel viewModel;
   final RecentAlbumViewModel? item;
-  final void Function(BuildContext context, String path)? onOpen;
+  final void Function(String path)? onOpen;
 
   void _deleteItem(BuildContext context) {
     if (item != null) {
@@ -42,7 +42,7 @@ class RecentItemView extends StatelessWidget {
       onTap: () async {
         var item = this.item!;
         if (await Directory(item.model.path).exists()) {
-          onOpen?.call(context, item.model.path);
+          onOpen?.call(item.model.path);
           return;
         }
         if (await showConfirmationDialog(context,

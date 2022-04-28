@@ -23,8 +23,9 @@ class _EditShortcutFieldState extends State<EditShortcutField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController.fromValue(TextEditingValue(
-        text: widget.viewModel.editingItem!.previous.shortcut ?? ""));
+    key = widget.viewModel.editingItem!.previous.shortcut;
+    _controller =
+        TextEditingController.fromValue(TextEditingValue(text: key ?? ""));
     _controller.addListener(() {
       final key = this.key ?? "";
       _controller.value = TextEditingValue(

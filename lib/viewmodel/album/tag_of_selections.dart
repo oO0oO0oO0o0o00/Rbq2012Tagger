@@ -2,7 +2,7 @@ import 'dart:async';
 
 import '../../model/model.dart';
 import '../../service/album_service.dart';
-import 'tag_templates_viewmodel.dart';
+import '../tag_templates_viewmodel.dart';
 import 'tagged_viewmodel.dart';
 
 /// Wrapper around the ability of showing intersection or union of
