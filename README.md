@@ -8,8 +8,8 @@ Currently still in progress. Not planning to update for the next month as my P0 
 
 ## Screenshots
 
-<img src="screenshots/scr00_contents.png" alt="screenshot" width="320"/>
-<img src="screenshots/scr01_homepage.png" alt="screenshot" width="320"/>
+<img src="screenshots/scr00_contents.png" alt="screenshot" width="480"/>
+<img src="screenshots/scr01_homepage.png" alt="screenshot" width="480"/>
 
 ## Roadmap
 
@@ -23,7 +23,7 @@ Currently still in progress. Not planning to update for the next month as my P0 
 - [x] VS Code-like side tabs for showing all available tag templates, and other functionalities, some listed below (switchable, resizable, collapsible, keep-state)
 - [x] intersection/union of tags for selected pictures via side tab (viewing and removal)
 - [x] Add comments so that at least I myself can read after a month or so
-- [ ] (P0, +) Reconnect the broken tag templates management (open from home page, open in new tab from any opened folder)
+- [x] Reconnect the broken tag templates management (open from home page, open in new tab from any opened folder)
 - [ ] (P0, +++) Search and highlight (by name, range of date, included and/or excluded tags)
   - [ ] (P2, +) Save/load searches
 - [ ] (P1, +) Selection/search -based actions (move/copy to, add/remove tags)
