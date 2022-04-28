@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tags/flutter_tags.dart';
 import 'package:provider/provider.dart';
 
-import '../../util/keyboard.dart';
 import '../../viewmodel/album/album_item_viewmodel.dart';
 import '../../viewmodel/album/album_viewmodel.dart';
 import '../../viewmodel/tag_templates_viewmodel.dart';
@@ -18,24 +17,22 @@ import 'album_item_tag_view.dart';
 /// Click event is listened and sent to [AlbumViewModel].
 class AlbumItemView extends StatelessWidget {
   final AlbumItemViewModel viewModel;
-  final int index;
-  final AlbumViewModel albumViewModel;
-  AlbumItemView({
-    Key? key,
-    required this.albumViewModel,
-    required this.index,
-  })  : viewModel = albumViewModel.getItem(index),
-        super(key: key);
+  // final int index;
+  // final AlbumViewModel albumViewModel;
+  final void Function() onClick;
+  final void Function(String) removeTag;
+  const AlbumItemView(
+      {Key? key,
+      required this.viewModel,
+      required this.onClick,
+      required this.removeTag})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Material(
       child: InkWell(
-          onTap: () {
-            albumViewModel.controller.handleItemClick(index,
-                isControlPressed: isControlPressed(),
-                isShiftPressed: isShiftPressed());
-          },
+          onTap: onClick,
           hoverColor: Theme.of(context).primaryColor.withAlpha(70),
           mouseCursor: SystemMouseCursors.basic,
           child: ChangeNotifierProvider.value(
@@ -87,22 +84,19 @@ class AlbumItemView extends StatelessWidget {
             ])));
   }
 
-  Widget _buildTagsView() {
-    return Consumer<TagTemplatesViewModel>(
-      builder: (context, _, child) => Consumer<AlbumItemViewModel>(
-          builder: (context, itemViewModel, child) => Tags(
-                itemCount: itemViewModel.getTagsCount(),
-                itemBuilder: (index) {
-                  final item = itemViewModel.getTagAt(index);
-                  return AlbumItemTagView(
-                    item: item,
-                    onClose: (String tag) => albumViewModel.controller
-                        .removeTagFromItem(viewModel, tag),
-                  );
-                },
-              )),
-    );
-  }
+  Widget _buildTagsView() => Consumer<TagTemplatesViewModel>(
+        builder: (context, tagTemplates, child) => Consumer<AlbumItemViewModel>(
+            builder: (context, itemViewModel, child) {
+          itemViewModel.updateTagTemplates(tagTemplates);
+          return Tags(
+            itemCount: itemViewModel.getTagsCount(),
+            itemBuilder: (index) {
+              final item = itemViewModel.getTagAt(index);
+              return AlbumItemTagView(item: item, onClose: removeTag);
+            },
+          );
+        }),
+      );
 }
 
 const _invertedColorFilter = ColorFilter.matrix([

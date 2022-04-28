@@ -12,10 +12,13 @@ class SelectableListController with ChangeNotifier {
     LogicalKeyboardKey.arrowRight: const Tuple2(1, 0),
     LogicalKeyboardKey.arrowUp: const Tuple2(0, -1),
     LogicalKeyboardKey.arrowDown: const Tuple2(0, 1),
+    LogicalKeyboardKey.pageUp: const Tuple2(0, -1),
+    LogicalKeyboardKey.pageDown: const Tuple2(0, 1),
   };
 
   final bool isSingleSelection;
   int numCols = 1;
+  int numRows = 1;
   int _itemsCount = 0;
   int _selectionHead = 0;
   int _selectionTail = 0;
@@ -65,7 +68,18 @@ class SelectableListController with ChangeNotifier {
   }
 
   KeyEventResult handleKey(RawKeyEvent e) {
-    final movement = _arrows[e.logicalKey];
+    var movement = _arrows[e.logicalKey];
+    if (movement == null) {
+      if (e.logicalKey == LogicalKeyboardKey.pageUp) {
+        movement = Tuple2(0, -numRows);
+      } else if (e.logicalKey == LogicalKeyboardKey.pageDown) {
+        movement = Tuple2(0, numRows);
+      } else if (e.logicalKey == LogicalKeyboardKey.home) {
+        movement = Tuple2(0, -_itemsCount);
+      } else if (e.logicalKey == LogicalKeyboardKey.end) {
+        movement = Tuple2(0, _itemsCount);
+      }
+    }
     if (movement != null) {
       if (e is RawKeyDownEvent) {
         handleArrowMovement(movement,
@@ -77,14 +91,20 @@ class SelectableListController with ChangeNotifier {
     return KeyEventResult.ignored;
   }
 
-  void handleArrowMovement(Tuple2 movement,
-          {required bool isControlPressed, required bool isShiftPressed}) =>
-      handleMovement(movement.item1 + movement.item2 * numCols,
-          isControlPressed: isControlPressed, isShiftPressed: isShiftPressed);
-
-  void handleMovement(int many,
+  void handleArrowMovement(Tuple2<int, int> movement,
       {required bool isControlPressed, required bool isShiftPressed}) {
-    final index = _selectionTail + many;
+    int index = _selectionTail + movement.item2 * numCols;
+    // Never move out of bound & keep column.
+    if (index < 0) {
+      index += (numCols - index - 1) ~/ numCols * numCols;
+    } else if (index >= _itemsCount) {
+      index -= (index - _itemsCount + numCols - 1) ~/ numCols * numCols;
+      // Handle the last row.
+      if (index >= _itemsCount) {
+        index -= numCols;
+      }
+    }
+    index = min(_itemsCount, max(0, index + movement.item1));
     if (index < 0 || index >= _itemsCount) {
       return;
     }

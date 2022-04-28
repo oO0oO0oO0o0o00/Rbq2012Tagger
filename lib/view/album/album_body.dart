@@ -1,5 +1,6 @@
 import 'package:flutter_improved_scrolling/flutter_improved_scrolling.dart';
 import 'package:flutter/material.dart';
+import '../../util/keyboard.dart';
 import '../../util/platform.dart';
 import '../../viewmodel/album/album_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -47,7 +48,8 @@ class _AlbumBodyState extends State<AlbumBody> {
         child: Consumer<AlbumViewModel>(
             builder: (context, albumViewModel, child) => LayoutBuilder(builder:
                     (BuildContext context, BoxConstraints constraints) {
-                  albumViewModel.controller.handleResize(constraints.maxWidth);
+                  albumViewModel.controller.handleResize(
+                      constraints.maxWidth, constraints.maxHeight);
                   return isPC()
                       ? Listener(
                           // There's no mean to cancel the scroll wheel event
@@ -82,8 +84,19 @@ class _AlbumBodyState extends State<AlbumBody> {
             childAspectRatio: constraints.maxWidth /
                 viewModel.controller.numCols /
                 viewModel.controller.itemHeight),
-        itemBuilder: (context, index) =>
-            AlbumItemView(albumViewModel: viewModel, index: index),
+        itemBuilder: (context, index) {
+          final itemViewModel = viewModel.getItem(index);
+          return AlbumItemView(
+            viewModel: itemViewModel,
+            onClick: () {
+              viewModel.controller.handleItemClick(index,
+                  isControlPressed: isControlPressed(),
+                  isShiftPressed: isShiftPressed());
+            },
+            removeTag: (String tag) =>
+                viewModel.controller.removeTagFromItem(itemViewModel, tag),
+          );
+        },
         itemCount: viewModel.getItemsCount());
   }
 }

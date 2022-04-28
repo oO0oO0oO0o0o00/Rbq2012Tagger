@@ -1,20 +1,19 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tuple/tuple.dart';
-import 'package:flutter/services.dart';
-import '../../util/keyboard.dart';
 
 import '../../model/model.dart';
 import '../../service/album_service.dart';
+import '../../util/keyboard.dart';
 import '../common/selectable_list_controller.dart';
 import 'album_core_struct.dart';
 import 'album_item_viewmodel.dart';
-import 'tag_of_selections.dart';
 import 'tagged_viewmodel.dart';
+import 'tags_of_selections.dart';
 
 /// Controller of [AlbumPage].
 ///
@@ -26,7 +25,7 @@ class AlbumController with ChangeNotifier {
 
   late final SelectableListController _selectionController =
       SelectableListController(onSelectionChanged: () {
-    updateSelections(_albumCoreStruct.cache!);
+    notifyListeners();
   });
 
   final _tagsOfSelections = TagsOfSelections();
@@ -55,7 +54,7 @@ class AlbumController with ChangeNotifier {
 
   /// Calculate number of columns from fixed
   /// height and max aspect ratio
-  void handleResize(double width) {
+  void handleResize(double width, double height) {
     if (!scrollController.hasClients) return;
     final position = scrollController.position.pixels;
     bool changed = false;
@@ -74,6 +73,7 @@ class AlbumController with ChangeNotifier {
       _selectionController.numCols = newNumCols;
       _oldItemHeight = _itemHeight;
     }
+    _selectionController.numRows = (height / _itemHeight).floor();
   }
 
   void scroll(double amount) {
@@ -97,16 +97,6 @@ class AlbumController with ChangeNotifier {
         scroll(event.scrollDelta.dy);
       }
     }
-  }
-
-  void updateSelections(List<AlbumItemViewModel?> cache) {
-    cache.forEachIndexed((index, item) {
-      if (item != null) {
-        updateSelection(index, item);
-      }
-    });
-    _tagsOfSelections.invalidate();
-    notifyListeners();
   }
 
   void updateSelection(int index, AlbumItemViewModel item) =>
@@ -167,10 +157,13 @@ class AlbumController with ChangeNotifier {
     return list?.length ?? 0;
   }
 
-  TaggedViewModel getTagOfSelectedItemsAt(int index, bool intersectionMode) =>
-      (intersectionMode
-          ? _tagsOfSelections.intersection
-          : _tagsOfSelections.union)![index];
+  TaggedViewModel getTagOfSelectedItemsAt(int index, bool intersectionMode) {
+    final tagged = (intersectionMode
+        ? _tagsOfSelections.intersection
+        : _tagsOfSelections.union)![index];
+    tagged.template = _albumCoreStruct.tagTemplates.getByName(tagged.tag);
+    return tagged;
+  }
 
   void handleItemClick(int index,
           {required bool isControlPressed, required bool isShiftPressed}) =>
@@ -198,20 +191,16 @@ class AlbumController with ChangeNotifier {
       addTagToSelected(tag.name);
     }
     if (e.isShiftPressed) {
-      handleMovement(1, isControlPressed: false, isShiftPressed: false);
+      handleArrowMovement(const Tuple2(1, 0),
+          isControlPressed: false, isShiftPressed: false);
       handleMoveSelection(itemHeight, scrollController);
     }
     return KeyEventResult.skipRemainingHandlers;
   }
 
-  void handleArrowMovement(Tuple2 movement,
+  void handleArrowMovement(Tuple2<int, int> movement,
           {required bool isControlPressed, required bool isShiftPressed}) =>
       _selectionController.handleArrowMovement(movement,
-          isControlPressed: isControlPressed, isShiftPressed: isShiftPressed);
-
-  void handleMovement(int many,
-          {required bool isControlPressed, required bool isShiftPressed}) =>
-      _selectionController.handleMovement(many,
           isControlPressed: isControlPressed, isShiftPressed: isShiftPressed);
 
   void handleMoveSelection(

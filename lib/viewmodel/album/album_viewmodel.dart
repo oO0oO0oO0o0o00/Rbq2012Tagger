@@ -26,11 +26,11 @@ class AlbumViewModel with ChangeNotifier {
       : _albumCoreStruct = AlbumCoreStruct(path, tagTemplates: tagTemplates) {
     controller = AlbumController(_albumCoreStruct)
       ..addListener(notifyListeners);
-    tagTemplates.addListener(() {
-      _albumCoreStruct.cache?.forEach((element) {
-        element?.updateTags(_albumCoreStruct.model, tagTemplates);
-      });
-    });
+    // tagTemplates.addListener(() {
+    //   _albumCoreStruct.cache?.forEach((element) {
+    //     element?.updateTags(_albumCoreStruct.model, tagTemplates);
+    //   });
+    // });
   }
 
   /// The mode with which items are sorted.
@@ -53,13 +53,13 @@ class AlbumViewModel with ChangeNotifier {
 
   Future<void> initDatabase() async {
     await AlbumService.initDatabase(_albumCoreStruct.model);
-    final cache = _albumCoreStruct.cache;
-    if (cache != null) {
-      for (var element in cache) {
-        element?.updateTags(
-            _albumCoreStruct.model, _albumCoreStruct.tagTemplates);
-      }
-    }
+    // final cache = _albumCoreStruct.cache;
+    // if (cache != null) {
+    //   for (var element in cache) {
+    //     element?.updateTags(
+    //         _albumCoreStruct.model, _albumCoreStruct.tagTemplates);
+    //   }
+    // }
     notifyListeners();
   }
 
@@ -84,12 +84,13 @@ class AlbumViewModel with ChangeNotifier {
   AlbumItemViewModel getItem(int index) {
     final cache = _albumCoreStruct.cache!;
     var item = cache[index];
-    if (item != null) return item;
-    item = AlbumItemViewModel(_albumCoreStruct.model.contents![index]);
-    if (_albumCoreStruct.model.dbReady) {
-      item.updateTags(_albumCoreStruct.model, _albumCoreStruct.tagTemplates);
+    if (item == null) {
+      item = AlbumItemViewModel(_albumCoreStruct.model.contents![index]);
+      if (_albumCoreStruct.model.dbReady) {
+        item.updateTags(_albumCoreStruct.model, tagTemplates);
+      }
+      cache[index] = item;
     }
-    cache[index] = item;
     controller.updateSelection(index, item);
     return item;
   }

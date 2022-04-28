@@ -24,7 +24,8 @@ class TagsOfSelections {
       {required bool intersectionMode}) async {
     final list = (await AlbumService.loadTagsForPictures(album, selection,
             intersectionMode: intersectionMode))
-        .map((e) => TaggedViewModel(e, tagTemplatesViewModel.getByName(e)))
+        .map((e) =>
+            TaggedViewModel(e, template: tagTemplatesViewModel.getByName(e)))
         .toList();
     if (intersectionMode) {
       _intersection = list;

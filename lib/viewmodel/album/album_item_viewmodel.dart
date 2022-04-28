@@ -41,8 +41,13 @@ class AlbumItemViewModel with ChangeNotifier, Selectable {
       Album album, TagTemplatesViewModel tagTemplates) async {
     final tags = await AlbumService.loadTags(album, _model.name);
     _tags.clear();
-    _tags
-        .addAll(tags.map((e) => TaggedViewModel(e, tagTemplates.getByName(e))));
+    _tags.addAll(tags.map((e) => TaggedViewModel(e)));
     notifyListeners();
+  }
+
+  void updateTagTemplates(TagTemplatesViewModel tagTemplates) {
+    for (var element in _tags) {
+      element.template = tagTemplates.getByName(element.tag);
+    }
   }
 }
