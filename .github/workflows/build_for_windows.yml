@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     
     steps:
-      - run: echo "meow"
+#       - run: echo "meow"
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v1
         with:
@@ -22,13 +22,19 @@ jobs:
       - run: flutter config --enable-windows-desktop
       - run: flutter pub get
       - run: flutter build windows
-      - run: tar -acf tagger-release-windows.zip -C .\build\windows\runner Release
-      - env:
-          EVENT_CONTEXT: ${{ toJSON(github.event) }}
-        run: |
-          echo ${{ github.event.release.tag_name }}
+      - name: Download sqlite3.dll
+        uses: carlosperate/download-file-action@v1
+        with:
+          file-url: https://raw.githubusercontent.com/tekartik/sqflite/master/sqflite_common_ffi/lib/src/windows/sqlite3.dll
+          location: .\build\windows\runner\Release
+      - run: mv .\build\windows\runner\Release .\build\windows\runner\tagger
+      - run: tar -acf tagger-release-windows.zip -C .\build\windows\runner tagger
+#       - env:
+#           EVENT_CONTEXT: ${{ toJSON(github.event) }}
+#         run: |
+#           echo ${{ github.event.release.tag_name }}
 #       -
-      - name: release
+      - name: Upload to release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.release.tag_name }}
