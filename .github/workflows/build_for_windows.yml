@@ -15,16 +15,21 @@ jobs:
     
     steps:
       - run: echo "meow"
-#       - uses: actions/checkout@v2
-#       - uses: subosito/flutter-action@v1
-#         with:
-#           channel: 'stable'
-#       - run: flutter config --enable-windows-desktop
-#       - run: flutter pub get
-#       - run: flutter build windows
-#       - run: tar -acf tagger-release-windows.zip -C .\build\windows\runner Release
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - run: flutter config --enable-windows-desktop
+      - run: flutter pub get
+      - run: flutter build windows
+      - run: tar -acf tagger-release-windows.zip -C .\build\windows\runner Release
       - env:
           EVENT_CONTEXT: ${{ toJSON(github.event) }}
         run: |
           echo ${{ github.event.release.tag_name }}
 #       -
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: tagger-release-windows.zip
