@@ -17,7 +17,10 @@ class TagsOfSelections {
   List<TaggedViewModel>? get union => _union;
   bool get invalid => _invalid;
 
-  void invalidate() => _invalid = true;
+  void invalidate() {
+    _invalid = true;
+    _intersection = _union = null;
+  }
 
   Future<void> loadTags(Album album,
       TagTemplatesViewModel tagTemplatesViewModel, List<String> selection,

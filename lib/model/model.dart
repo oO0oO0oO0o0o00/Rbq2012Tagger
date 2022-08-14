@@ -54,10 +54,13 @@ class AlbumItem {
   /// Modified time of this file.
   final DateTime dateTime;
 
+  /// File size in bytes
+  final int fileSizeBytes;
+
   /// Name of the picture file (which is the filename).
   String get name => basename(path);
 
-  AlbumItem(this.path, this.dateTime);
+  AlbumItem(this.path, {required this.dateTime, required this.fileSizeBytes});
 }
 
 /// Interface for function signature that is used for sorting the album.

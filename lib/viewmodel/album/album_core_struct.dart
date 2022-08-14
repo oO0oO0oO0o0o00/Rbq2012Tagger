@@ -8,6 +8,12 @@ import 'album_item_viewmodel.dart';
 class AlbumCoreStruct {
   final Album model;
 
+  List<AlbumItem>? _filteredContents;
+
+  List<AlbumItem>? get filteredContents => _filteredContents ?? model.contents;
+
+  set filteredContents(List<AlbumItem>? value) => _filteredContents = value;
+
   List<AlbumItemViewModel?>? cache;
 
   final TagTemplatesViewModel tagTemplates;

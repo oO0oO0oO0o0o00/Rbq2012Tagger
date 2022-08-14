@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import 'package:tagger/model/global/model.dart';
 import '../../util/platform.dart';
 import '../../viewmodel/album/album_arguments.dart';
 import '../../viewmodel/album/album_viewmodel.dart';
@@ -9,15 +10,16 @@ import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/dialogs.dart';
 import 'album_body.dart';
 import 'album_page_sidebar.dart';
-import 'bulk_tags_view.dart';
+import 'sidetabs/bulk_tags_view.dart';
+import 'sidetabs/search_view.dart';
 import 'sort_icon.dart';
-import 'tag_templates_view.dart';
+import 'sidetabs/tag_templates_card_view.dart';
 
 class AlbumPage extends StatefulWidget {
   final String path;
   final TagTemplatesViewModel tagTemplates;
   final void Function() onOpened;
-  final void Function() onFailure;
+  final void Function(BuildContext context) onFailure;
 
   AlbumPage(
       {Key? key, required AlbumArguments arguments, required this.tagTemplates})
@@ -33,9 +35,8 @@ class AlbumPage extends StatefulWidget {
 }
 
 class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
-  late final AlbumViewModel _viewModel =
-      AlbumViewModel(widget.path, tagTemplates: widget.tagTemplates);
-  late final _tabController = TabController(length: 2, vsync: this);
+  late final AlbumViewModel viewModel;
+  late final _tabController = TabController(length: 3, vsync: this);
   bool _loadingDB = false;
   bool _loadingContents = false;
   bool _showSideTab = true;
@@ -46,15 +47,22 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    viewModel = AlbumViewModel(widget.path, tagTemplates: widget.tagTemplates);
     _loadDB(context);
     _loadContents(context);
+  }
+
+  @override
+  void dispose() {
+    viewModel.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider.value(
         value: widget.tagTemplates,
         child: ChangeNotifierProvider.value(
-            value: _viewModel,
+            value: viewModel,
             child: isPC() ? _buildForPC(context) : _buildForMobile(context)),
       );
 
@@ -66,12 +74,13 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
           key: _sideTabKey,
           controller: _tabController,
           children: [
-            TagTemplatesView(
+            TagTemplatesCardView(
               onClickTag: _onClickTag,
             ),
             BulkTagsView(
               onClickTag: (tag) {},
             ),
+            SearchView(onSetFilter: _onSetFilter)
           ],
         );
         // A stack is used to show progress bar above.
@@ -82,7 +91,8 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
               selectedIndex: _sideTabIndex,
               tabIcons: const [
                 Icon(Icons.bookmarks_outlined),
-                Icon(Icons.fact_check_outlined)
+                Icon(Icons.fact_check_outlined),
+                Icon(Icons.search)
               ],
               actionIcons: const [SortIcon(offset: Offset(64, 0))],
               onSelectSideTab: _onSelectTab,
@@ -115,14 +125,14 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
 
   Future<void> _loadContents(BuildContext context) async {
     if (_loadingContents) return;
-    final album = _viewModel;
+    final album = viewModel;
     setState(() => _loadingContents = true);
     await album.loadContents();
     setState(() => _loadingContents = false);
   }
 
   Future<void> _loadDB(BuildContext context) async {
-    final album = _viewModel;
+    final album = viewModel;
     if (_loadingDB || album.dbReady) return;
     setState(() => _loadingDB = true);
     if (!await album.isManaged()) {
@@ -131,19 +141,19 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
               content:
                   'The selected folder is currently not an managed album. Create one?') !=
           true) {
-        widget.onFailure();
+        widget.onFailure(context);
         return;
       }
     }
+    await viewModel.openDatabase();
     widget.onOpened();
-    await album.initDatabase();
     setState(() => _loadingDB = false);
   }
 
-  void _onClickTag(String tag) => _viewModel.controller.addTagToSelected(tag);
+  void _onClickTag(String tag) => viewModel.controller.addTagToSelected(tag);
 
   void _onSelectTab(int index) {
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _tabController.index = index;
     });
     if (index == _sideTabIndex) {
@@ -154,5 +164,9 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
         _sideTabIndex = index;
       });
     }
+  }
+
+  void _onSetFilter(SearchOptions? filter) {
+    viewModel.filter = filter;
   }
 }

@@ -48,8 +48,12 @@ class AppTab extends StatelessWidget {
             path: path,
             onOpened: () => homePageViewModel.addRecent(
                 RecentAlbum(path, lastOpened: DateTime.now(), pinned: false)),
-            onFailure: () => interceptPathChange(
-                const AppPagePath(kind: AppPageKinds.home), this)));
+            onFailure: (innerContext) {
+              interceptPathChange(
+                  const AppPagePath(kind: AppPageKinds.home), this);
+              Navigator.pushReplacementNamed(
+                  innerContext, MyHomePage.routeName);
+            }));
   }
 
   void _handleOpenTagsMgmt(BuildContext context, bool newTab) {

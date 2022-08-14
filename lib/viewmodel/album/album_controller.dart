@@ -25,6 +25,7 @@ class AlbumController with ChangeNotifier {
 
   late final SelectableListController _selectionController =
       SelectableListController(onSelectionChanged: () {
+    _tagsOfSelections.invalidate();
     notifyListeners();
   });
 
@@ -118,7 +119,7 @@ class AlbumController with ChangeNotifier {
       await operation(
           _albumCoreStruct.model,
           Tagged(
-              name: _albumCoreStruct.model.contents![selection].name,
+              name: _albumCoreStruct.filteredContents![selection].name,
               tag: tag));
       _albumCoreStruct.cache![selection]
           ?.updateTags(_albumCoreStruct.model, _albumCoreStruct.tagTemplates);
@@ -149,7 +150,7 @@ class AlbumController with ChangeNotifier {
           _albumCoreStruct.model,
           _albumCoreStruct.tagTemplates,
           _selectionController.selections
-              .map((e) => _albumCoreStruct.model.contents![e].name)
+              .map((e) => _albumCoreStruct.filteredContents![e].name)
               .toList(),
           intersectionMode: intersectionMode);
       notifyListeners();
@@ -220,7 +221,7 @@ class AlbumController with ChangeNotifier {
       animateTo = null;
     }
     if (animateTo != null) {
-      WidgetsBinding.instance!.addPostFrameCallback((_) async {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         await scrollController.animateTo(animateTo!,
             duration: const Duration(milliseconds: 100), curve: Curves.ease);
       });

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tagger/viewmodel/album/tagged_viewmodel.dart';
 
 import '../../model/global/model.dart';
 import '../commons/tag_view.dart';
@@ -19,22 +20,9 @@ class TagTemplateItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = TextStyle(color: item.color.foreground);
     return TagView(
-        backgroundColor: item.color.background,
-        onTap: onTap,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          key: Key(item.name),
-          children: [
-            Text(item.name, style: textStyle),
-            if (item.shortcut != null) ...[
-              const SizedBox(width: 12),
-              Icon(Icons.keyboard, color: item.color.foreground),
-              const SizedBox(width: 4),
-              Text(item.shortcut!, style: textStyle)
-            ]
-          ],
-        ));
+        item: TaggedViewModel(item.name, template: item),
+        onTap: (_) => onTap(),
+        showShortcuts: true);
   }
 }

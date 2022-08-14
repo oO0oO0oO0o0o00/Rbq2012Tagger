@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodel/album/album_item_viewmodel.dart';
 import '../../viewmodel/album/album_viewmodel.dart';
 import '../../viewmodel/tag_templates_viewmodel.dart';
-import 'album_item_tag_view.dart';
+import '../commons/tag_view.dart';
 
 /// The view for album item (picture).
 ///
@@ -92,7 +92,7 @@ class AlbumItemView extends StatelessWidget {
             itemCount: itemViewModel.getTagsCount(),
             itemBuilder: (index) {
               final item = itemViewModel.getTagAt(index);
-              return AlbumItemTagView(item: item, onClose: removeTag);
+              return TagView(item: item, onClose: removeTag);
             },
           );
         }),

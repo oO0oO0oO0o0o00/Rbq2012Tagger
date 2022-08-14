@@ -18,6 +18,7 @@ class AlbumService {
   static Future<Database> getDatabase(Album album) async {
     sqfliteFfiInit();
     late Database db;
+    await initSavDir(album);
     await album.instanceLock.synchronized(() async => db =
         album.db ??= await databaseFactoryFfi.openDatabase(_getDbPath(album),
             options: OpenDatabaseOptions(
@@ -40,10 +41,14 @@ class AlbumService {
   static Future<void> loadContents(Album album) async {
     album.contents ??= await Directory(album.path)
         .list()
-        .asyncMap((entity) async => (entity is File &&
-                _pictureExtensions.contains(extension(entity.path)))
-            ? AlbumItem(entity.path, (await entity.stat()).modified)
-            : null)
+        .asyncMap((entity) async {
+          var stat = await entity.stat();
+          return (entity is File &&
+                  _pictureExtensions.contains(extension(entity.path)))
+              ? AlbumItem(entity.path,
+                  dateTime: stat.modified, fileSizeBytes: stat.size)
+              : null;
+        })
         .where((album) => album != null)
         .map((album) => album!)
         .toList();
@@ -69,13 +74,14 @@ class AlbumService {
       1;
 
   static Future<bool> isManaged(Album album) async =>
-      File(_getDbPath(album)).exists();
+      await Directory(_getSavDir(album)).exists();
 
-  static Future<void> initDatabase(Album album) async =>
-      await getDatabase(album);
+  static Future<void> initSavDir(Album album) async =>
+      await Directory(_getSavDir(album)).create();
 
-  static String _getDbPath(Album album) =>
-      join(album.path, "rbq2012.album.tags.db");
+  static String _getSavDir(Album album) => join(album.path, ".rbq2012.tagger");
+
+  static String _getDbPath(Album album) => join(_getSavDir(album), "album.db");
 
   /// Load the intersection or union of sets of tags given pictures.
   static Future<Iterable<String>> loadTagsForPictures(

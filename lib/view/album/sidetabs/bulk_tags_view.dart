@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tags/flutter_tags.dart';
 import 'package:provider/provider.dart';
 
-import '../../viewmodel/album/album_viewmodel.dart';
-import '../../viewmodel/tag_templates_viewmodel.dart';
-import 'album_item_tag_view.dart';
-import '../commons/scalable_card_view.dart';
+import '../../../viewmodel/album/album_viewmodel.dart';
+import '../../../viewmodel/tag_templates_viewmodel.dart';
+import '../../commons/scalable_card_view.dart';
+import '../../commons/tag_view.dart';
 
 /// The view containing the intersection or union of tags of selected items.
 class BulkTagsView extends StatefulWidget {
@@ -80,10 +80,11 @@ class _BulkTagsViewState extends State<BulkTagsView>
           itemBuilder: (int index) {
             final item = albumViewModel.controller
                 .getTagOfSelectedItemsAt(index, isSelected[0]);
-            return AlbumItemTagView(
+            return TagView(
                 item: item,
                 onClose: (String tag) =>
-                    albumViewModel.controller.removeTagFromSelected(tag));
+                    albumViewModel.controller.removeTagFromSelected(tag),
+                showShortcuts: true);
           },
         ),
       )
