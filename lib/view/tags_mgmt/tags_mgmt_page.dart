@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tagger/util/platform.dart';
-import '../commons/dialogs.dart';
 import 'package:provider/provider.dart';
 
+import '../../util/platform.dart';
 import '../../viewmodel/tag_templates_viewmodel.dart';
+import '../commons/dialogs.dart';
 import 'tag_item_view.dart';
 
 /// Tags management page for managing tag templates.

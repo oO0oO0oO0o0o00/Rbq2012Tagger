@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tagger/viewmodel/album/tagged_viewmodel.dart';
 
 import '../../model/global/model.dart';
+import '../../viewmodel/album/tagged_viewmodel.dart';
 import '../commons/tag_view.dart';
 
 /// View of a tag template.

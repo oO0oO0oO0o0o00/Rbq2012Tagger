@@ -47,3 +47,4 @@ app.*.map.json
 
 # app's configuration file (linked to Debug folder)
 app.db
+.packages (2)

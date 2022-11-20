@@ -1,15 +1,17 @@
 import 'dart:async';
-import 'package:flutter/widgets.dart';
-import 'package:tagger/model/model.dart';
 
-import '../../model/global/model.dart';
+import 'package:flutter/widgets.dart';
+
+import '../../model/global/batch_action.dart';
+import '../../model/global/search_options.dart';
+import '../../model/model.dart';
 import '../../service/album_service.dart';
 import '../../util/search.dart';
 import '../tag_templates_viewmodel.dart';
+import 'album_controller.dart';
 import 'album_core_struct.dart';
 import 'album_item_viewmodel.dart';
 import 'album_items_sort_mode_viewmodel.dart';
-import 'album_controller.dart';
 
 /// View model for [AlbumPage].
 ///
@@ -21,11 +23,21 @@ class AlbumViewModel with ChangeNotifier {
 
   SearchOptions? _filter;
 
+  var _loading = false;
+
   late final AlbumCoreStruct _albumCoreStruct;
 
   /// The controller that handles selection-based
   /// and highly UI-related functionalities.
   late final AlbumController controller;
+
+  bool get loading => _loading;
+
+  set loading(bool value) {
+    if (_loading == value) return;
+    _loading = value;
+    notifyListeners();
+  }
 
   AlbumViewModel(String path, {required TagTemplatesViewModel tagTemplates})
       : _albumCoreStruct = AlbumCoreStruct(path, tagTemplates: tagTemplates) {
@@ -142,5 +154,15 @@ class AlbumViewModel with ChangeNotifier {
       filtered.add(item);
     }
     return filtered;
+  }
+
+  void performBatchAction(
+      BatchAction action,
+      AlbumViewModel Function(String path, String referredBy) getAlbumViewModel,
+      void Function(String path, String referredBy) releaseAlbumViewModel) {
+    loading = true;
+    // TODO: tagging operations -> copy move
+    if (action.enableMoveCopyAction) {}
+    loading = false;
   }
 }

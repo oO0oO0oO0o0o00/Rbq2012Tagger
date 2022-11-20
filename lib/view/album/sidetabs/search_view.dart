@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../util/text_editing_controller.dart';
 
-import '../../../model/global/model.dart';
+import '../../../model/global/search_options.dart';
 import '../../../service/search_options_service.dart';
 import '../../../viewmodel/album/search_options_viewmodel.dart';
 import '../../commons/date_text_field.dart';
@@ -42,14 +43,14 @@ class _SearchViewState extends State<SearchView> {
         viewModel.toSizeKb = sizeToController.text;
       });
     viewModel.addListener(() {
-      nameController.text = viewModel.byName;
-      sizeFromController.text = viewModel.fromSizeKb;
-      sizeToController.text = viewModel.toSizeKb;
+      nameController.setTextIfDifferent(viewModel.byName);
+      sizeFromController.setTextIfDifferent(viewModel.fromSizeKb);
+      sizeToController.setTextIfDifferent(viewModel.toSizeKb);
     });
   }
 
   void loadSavedState() async {
-    viewModel.setModel(await SearchOptionsService.getDefault());
+    viewModel.setModel(await SearchOptionsService.instance.getDefault());
   }
 
   @override

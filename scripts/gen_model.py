@@ -1,7 +1,14 @@
 def do(name: str, fields: list[tuple[str, bool, tuple]]):
-    OPEN, CLOSE, IND, NL, DQ = '{', '}', '    ', '\n', '"'
+    OPEN, CLOSE, IND, NL, SQ, DQ = '{', '}', '    ', '\n', "'", '"'
     class_name = chcase(name, pascal=True)
-    print(
+
+    fp = open(f"{name}.dart.txt", "w")
+
+    def write(text):
+        fp.write(text + "\n")
+        print(text)
+
+    write(
         f"""{name}.dart:
 
 class {class_name} {OPEN}
@@ -23,7 +30,7 @@ class {class_name} {OPEN}
     Map<String, Object?> toMap() => {OPEN}{NL}{IND}{IND}{f',{NL}{IND}{IND}'.join([
         f"col{chcase(field[0], pascal=True)}: {field[2][3 if field[1] else 2].format(chcase(field[0]))}"
         for field in fields
-    ])};{NL}{IND}{CLOSE}
+    ])}{NL}{IND}{CLOSE};
 
 {CLOSE}
 
@@ -46,7 +53,7 @@ class {class_name}ViewModel with ChangeNotifier {OPEN}
 class {class_name}Service {OPEN}
     static Future<void> createTable(Database db, int version) async {OPEN}
         await db.execute('CREATE TABLE ${OPEN}{class_name}.tableName{CLOSE} ('
-        {f',{NL}{IND}{IND}'.join([f"${OPEN}{class_name}.col{chcase(field[0], pascal=True)}{CLOSE} {field[2][0]}" for field in fields])}\
+        {f',{SQ}{NL}{IND}{IND}'.join([f"'${OPEN}{class_name}.col{chcase(field[0], pascal=True)}{CLOSE} {field[2][0]}" for field in fields])}\
 ) WITHOUT ROWID');
     {CLOSE}
 {CLOSE}
@@ -72,14 +79,23 @@ class Dtypes:
 
 
 if __name__ == '__main__':
-    do("search_options", [
+    # do("search_options", [
+    #     ("name", False, Dtypes.string),
+    #     ("by_name", True, Dtypes.string),
+    #     ("by_name_case", True, Dtypes.bool),
+    #     ("from_time", True, Dtypes.datetime),
+    #     ("to_time", True, Dtypes.datetime),
+    #     ("from_size_kb", True, Dtypes.int),
+    #     ("to_size_kb", True, Dtypes.int),
+    #     ("tags", True, Dtypes.string),
+    #     ("xtags", True, Dtypes.string),
+    # ])
+    do("batch_action", [
         ("name", False, Dtypes.string),
-        ("by_name", True, Dtypes.string),
-        ("by_name_case", True, Dtypes.bool),
-        ("from_time", True, Dtypes.datetime),
-        ("to_time", True, Dtypes.datetime),
-        ("from_size_kb", True, Dtypes.int),
-        ("to_size_kb", True, Dtypes.int),
+        ("enable_move_copy_action", True, Dtypes.bool),
+        ("copy", True, Dtypes.bool),
+        ("path", True, Dtypes.string),
+        ("enable_tagging_action", True, Dtypes.bool),
         ("tags", True, Dtypes.string),
         ("xtags", True, Dtypes.string),
     ])

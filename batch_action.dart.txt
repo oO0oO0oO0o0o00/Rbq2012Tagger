@@ -1,0 +1,131 @@
+batch_action.dart:
+
+class BatchAction {
+    static final tableName = "batch_action";
+    static const colName = "name";
+    static const colEnableMoveCopyAction = "enable_move_copy_action";
+    static const colCopy = "copy";
+    static const colPath = "path";
+    static const colEnableTaggingAction = "enable_tagging_action";
+    static const colTags = "tags";
+    static const colXtags = "xtags";
+
+    final String name;
+    bool? enableMoveCopyAction;
+    bool? copy;
+    String? path;
+    bool? enableTaggingAction;
+    String? tags;
+    String? xtags;
+
+    BatchAction({
+        required this.name, this.enableMoveCopyAction, this.copy, this.path, this.enableTaggingAction, this.tags, this.xtags
+    });
+
+    BatchAction.fromMap(Map<String, Object?> map)
+        : name = map[colName] as String,
+        enableMoveCopyAction = map[colEnableMoveCopyAction] == null ? null : (map[colEnableMoveCopyAction] as int != 0),
+        copy = map[colCopy] == null ? null : (map[colCopy] as int != 0),
+        path = map[colPath] as String?,
+        enableTaggingAction = map[colEnableTaggingAction] == null ? null : (map[colEnableTaggingAction] as int != 0),
+        tags = map[colTags] as String?,
+        xtags = map[colXtags] as String?;
+
+    Map<String, Object?> toMap() => {
+        colName: name,
+        colEnableMoveCopyAction: enableMoveCopyAction,
+        colCopy: copy,
+        colPath: path,
+        colEnableTaggingAction: enableTaggingAction,
+        colTags: tags,
+        colXtags: xtags
+    };
+
+}
+
+
+batch_action_viewmodel.dart:
+
+class BatchActionViewModel with ChangeNotifier {
+    BatchAction? _model;
+    String? get name => _model?.name;
+
+    set name(String? value) {
+        final model = _model;
+        if (model == null || value == model.name) return;
+        model.name = value;
+        notifyListeners();
+        }
+
+    bool? get enableMoveCopyAction => _model?.enableMoveCopyAction;
+
+    set enableMoveCopyAction(bool? value) {
+        final model = _model;
+        if (model == null || value == model.enableMoveCopyAction) return;
+        model.enableMoveCopyAction = value;
+        notifyListeners();
+        }
+
+    bool? get copy => _model?.copy;
+
+    set copy(bool? value) {
+        final model = _model;
+        if (model == null || value == model.copy) return;
+        model.copy = value;
+        notifyListeners();
+        }
+
+    String? get path => _model?.path;
+
+    set path(String? value) {
+        final model = _model;
+        if (model == null || value == model.path) return;
+        model.path = value;
+        notifyListeners();
+        }
+
+    bool? get enableTaggingAction => _model?.enableTaggingAction;
+
+    set enableTaggingAction(bool? value) {
+        final model = _model;
+        if (model == null || value == model.enableTaggingAction) return;
+        model.enableTaggingAction = value;
+        notifyListeners();
+        }
+
+    String? get tags => _model?.tags;
+
+    set tags(String? value) {
+        final model = _model;
+        if (model == null || value == model.tags) return;
+        model.tags = value;
+        notifyListeners();
+        }
+
+    String? get xtags => _model?.xtags;
+
+    set xtags(String? value) {
+        final model = _model;
+        if (model == null || value == model.xtags) return;
+        model.xtags = value;
+        notifyListeners();
+        }
+
+}
+
+
+batch_action_service.dart:
+
+class BatchActionService {
+    static Future<void> createTable(Database db, int version) async {
+        await db.execute('CREATE TABLE ${BatchAction.tableName} ('
+        '${BatchAction.colName} TEXT,'
+        '${BatchAction.colEnableMoveCopyAction} INT,'
+        '${BatchAction.colCopy} INT,'
+        '${BatchAction.colPath} TEXT,'
+        '${BatchAction.colEnableTaggingAction} INT,'
+        '${BatchAction.colTags} TEXT,'
+        '${BatchAction.colXtags} TEXT) WITHOUT ROWID');
+    }
+}
+        

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../util/platform.dart';
 import '../../viewmodel/homepage_viewmodel.dart';
 import '../../viewmodel/recent_album_view_model.dart';
+import '../commons/pick_album.dart';
 import 'recent_item_view.dart';
 
 /// Home page. It was called "MyHomePage" and it's still called so.
@@ -27,11 +28,7 @@ class MyHomePage extends StatelessWidget {
       : super(key: key);
 
   void _selectAndOpen(BuildContext context) {
-    final file = DirectoryPicker()
-      ..defaultFilterIndex = 0
-      ..title = 'Select an album, meow~';
-
-    final result = file.getDirectory();
+    final result = pick_album();
     if (result != null) {
       onOpen(result.path);
     }

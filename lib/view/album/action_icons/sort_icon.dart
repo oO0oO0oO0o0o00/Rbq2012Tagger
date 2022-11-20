@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/album/album_items_sort_mode_viewmodel.dart';
-import '../../viewmodel/album/album_viewmodel.dart';
+import '../../../viewmodel/album/album_items_sort_mode_viewmodel.dart';
+import '../../../viewmodel/album/album_viewmodel.dart';
 
 /// The "sort by" icon.
 class SortIcon extends StatelessWidget {
