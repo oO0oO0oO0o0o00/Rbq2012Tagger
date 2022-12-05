@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'package:provider/provider.dart';
+import 'package:tagger/model/global/model.dart';
 import '../../model/global/batch_action.dart';
 import '../../viewmodel/homepage_viewmodel.dart';
 import '../../model/global/search_options.dart';
@@ -9,6 +10,7 @@ import '../../viewmodel/album/album_arguments.dart';
 import '../../viewmodel/album/album_viewmodel.dart';
 import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/dialogs.dart';
+import '../commons/file_conflict_dialog.dart';
 import 'action_icons/action_icon.dart';
 import 'action_icons/filter_icon.dart';
 import 'action_icons/sort_icon.dart';
@@ -25,7 +27,7 @@ class AlbumPage extends StatefulWidget {
   final void Function(String path) onOpened;
   final void Function(BuildContext context) onFailure;
   final AlbumViewModel Function(String path, String referredBy) getViewModel;
-  final void Function(String path, String referredBy) releaseAlbumViewModel;
+  final void Function(String? path, String referredBy) releaseAlbumViewModel;
 
   AlbumPage(
       {Key? key,
@@ -62,7 +64,7 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
-    widget.releaseAlbumViewModel(widget.path, widget.path);
+    widget.releaseAlbumViewModel(null, widget.path);
     super.dispose();
   }
 
@@ -72,9 +74,7 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
       child: ChangeNotifierProvider.value(
         value: widget.homePageViewModel,
         child: ChangeNotifierProvider.value(
-            value: viewModel,
-            builder: (context, child) =>
-                isPC() ? _buildForPC(context) : _buildForMobile(context)),
+            value: viewModel, builder: (context, child) => isPC() ? _buildForPC(context) : _buildForMobile(context)),
       ));
 
   Widget _buildForPC(BuildContext context) => Material(
@@ -100,15 +100,10 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
           Row(children: [
             AlbumPageSidebar(
               selectedIndex: _sideTabIndex,
-              tabIcons: const [
-                Icon(Icons.bookmarks_outlined),
-                Icon(Icons.fact_check_outlined),
-                Icon(Icons.search)
-              ],
+              tabIcons: const [Icon(Icons.bookmarks_outlined), Icon(Icons.fact_check_outlined), Icon(Icons.search)],
               actionIcons: [
-                if (Provider.of<AlbumViewModel>(context).filter != null)
-                  const FilterIcon(offset: Offset(64, 0)),
-                ActionIcon(onConfirmed: _applyAction),
+                if (Provider.of<AlbumViewModel>(context).filter != null) const FilterIcon(offset: Offset(64, 0)),
+                ActionIcon(onConfirmed: _applyAction, currentPath: widget.path),
                 const SortIcon(offset: Offset(64, 0))
               ],
               onSelectSideTab: _onSelectTab,
@@ -120,23 +115,17 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
                       children: [sideTab, AlbumBody(key: _bodyKey)],
                       initialWeights: const [.2, .8],
                     )
-                  : Stack(children: [
-                      Offstage(offstage: true, child: sideTab),
-                      AlbumBody(key: _bodyKey)
-                    ]),
+                  : Stack(children: [Offstage(offstage: true, child: sideTab), AlbumBody(key: _bodyKey)]),
             ),
           ]),
-          if (context.read<AlbumViewModel>().loading)
-            const LinearProgressIndicator(),
+          if (context.read<AlbumViewModel>().loading) const LinearProgressIndicator(),
         ]);
       }(true));
 
   Widget _buildForMobile(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: Consumer<AlbumViewModel>(
-            builder: (context, viewModel, child) =>
-                Text(viewModel.pathForDisplay)),
-        actions: [ActionIcon(onConfirmed: _applyAction), const SortIcon()],
+        title: Consumer<AlbumViewModel>(builder: (context, viewModel, child) => Text(viewModel.pathForDisplay)),
+        actions: [ActionIcon(onConfirmed: _applyAction, currentPath: widget.path), const SortIcon()],
       ),
       body: AlbumBody(key: _bodyKey));
 
@@ -144,9 +133,7 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
     if (viewModel.loading || viewModel.dbReady) return;
     if (!await viewModel.isManaged()) {
       if (await showConfirmationDialog(context,
-              title: 'Create Album',
-              content:
-                  'The selected folder is currently not an managed album. Create one?') !=
+              title: 'Create Album', content: 'The selected folder is currently not an managed album. Create one?') !=
           true) {
         widget.onFailure(context);
         return;
@@ -180,8 +167,14 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
   bool _applyAction(BatchAction action) {
     if (viewModel.loading) return false;
     viewModel.performBatchAction(
-        action, widget.getViewModel, widget.releaseAlbumViewModel);
+      action,
+      getAlbumViewModel: widget.getViewModel,
+      releaseAlbumViewModel: widget.releaseAlbumViewModel,
+      conflictResolver: ((conflicts) => showFileConflictResolvingDialog(context, conflicts)),
+    );
+    if (action.enableMoveCopyAction) {
+      widget.homePageViewModel.addRecent(RecentAlbum(action.path!, lastOpened: DateTime.now(), pinned: false));
+    }
     return true;
   }
 }
-// TODO: reduce reference after page closed. Dispose if owner page closed or reference nullified.

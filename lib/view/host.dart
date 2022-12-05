@@ -81,8 +81,7 @@ class _HostState extends State<Host> {
         break;
     }
     // Otherwise accept and apply the change.
-    final tab = _tabbedViewController.tabs
-        .firstWhere((element) => element.content == id);
+    final tab = _tabbedViewController.tabs.firstWhere((element) => element.content == id);
     tab.value = path;
     tab.text = path.displayName;
     return true;
@@ -95,8 +94,7 @@ class _HostState extends State<Host> {
   }
 
   bool _handleSingletonPage(AppPagePath path, AppTab id) {
-    final tabIndex = _tabbedViewController.tabs
-        .indexWhere((element) => element.value == path);
+    final tabIndex = _tabbedViewController.tabs.indexWhere((element) => element.value == path);
     if (tabIndex >= 0) {
       _tabbedViewController.selectedIndex = tabIndex;
       return false;
@@ -115,8 +113,7 @@ class _HostState extends State<Host> {
     return DefaultTextStyle(
         child: CallbackShortcuts(bindings: {
           // `Ctrl + N` => new tab.
-          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN):
-              _newTab,
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN): _newTab,
         }, child: Focus(focusNode: _focus, child: _buildTabbedView(context))),
         style: textStyle);
   }
@@ -127,8 +124,7 @@ class _HostState extends State<Host> {
             controller: _tabbedViewController,
             tabsAreaButtonsBuilder: (context, tabsCount) => [
                   // Button for opening new tab.
-                  TabButton(
-                      icon: IconProvider.data(Icons.add), onPressed: _newTab),
+                  TabButton(icon: IconProvider.data(Icons.add), onPressed: _newTab),
                 ],
             onTabClose: (_, __) {
               // For simplicity, ensure there's always at least one tab.
@@ -143,8 +139,7 @@ class _HostState extends State<Host> {
   AlbumViewModel _getAlbumViewModel(String path, String referredBy) {
     var album = albums[path];
     if (album == null) {
-      album = Tuple2(AlbumViewModel(path, tagTemplates: widget.tagTemplates),
-          {referredBy});
+      album = Tuple2(AlbumViewModel(path, tagTemplates: widget.tagTemplates), {referredBy});
       albums[path] = album;
     } else {
       album.item2.add(referredBy);
@@ -153,13 +148,21 @@ class _HostState extends State<Host> {
     return album.item1;
   }
 
-  void _releaseAlbumViewModel(String path, String referredBy) {
-    var album = albums[path];
-    if (album == null) return;
-    album.item2.remove(referredBy);
-    if (album.item2.isEmpty) {
-      album.item1.dispose();
-      albums.remove(path);
+  void _releaseAlbumViewModel(String? path, String referredBy) {
+    final Map<String, Tuple2<AlbumViewModel, Set<String>>> targets;
+    if (path != null) {
+      final album = albums[path];
+      targets = album == null ? {} : {path: album};
+    } else {
+      targets = albums;
+    }
+    for (final pair in targets.entries.toList()) {
+      final album = pair.value;
+      album.item2.remove(referredBy);
+      if (album.item2.isEmpty) {
+        album.item1.dispose();
+        albums.remove(pair.key);
+      }
     }
     _debugPrintAlbums();
   }

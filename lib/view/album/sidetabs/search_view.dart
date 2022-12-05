@@ -73,9 +73,7 @@ class _SearchViewState extends State<SearchView> {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(
-                      labelText: "Name pattern",
-                      hintText: "keyword or wildcard"),
+                  decoration: const InputDecoration(labelText: "Name pattern", hintText: "keyword or wildcard"),
                 ),
                 const SizedBox(height: rowSpacing),
                 Row(
@@ -84,21 +82,15 @@ class _SearchViewState extends State<SearchView> {
                         child: TextField(
                             controller: sizeFromController,
                             keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            decoration:
-                                const InputDecoration(labelText: "Size from"))),
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            decoration: const InputDecoration(labelText: "Size from"))),
                     const Text("   -   "),
                     Expanded(
                         child: TextField(
                             controller: sizeToController,
                             keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            decoration:
-                                const InputDecoration(labelText: "to"))),
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            decoration: const InputDecoration(labelText: "to"))),
                     const Text("KB")
                   ],
                 ),
@@ -117,8 +109,7 @@ class _SearchViewState extends State<SearchView> {
                       downlink: () => viewModel.toTime)
                 ]),
                 const SizedBox(height: rowSpacing),
-                Text("Included tags",
-                    style: TextStyle(color: Theme.of(context).hintColor)),
+                Text("Included tags", style: TextStyle(color: Theme.of(context).hintColor)),
                 FilterTagsView(
                   addTag: viewModel.addTag,
                   removeTag: viewModel.removeTag,
@@ -126,8 +117,7 @@ class _SearchViewState extends State<SearchView> {
                   getTagAt: viewModel.getTagAt,
                 ),
                 const SizedBox(height: rowSpacing),
-                Text("Excluded tags",
-                    style: TextStyle(color: Theme.of(context).hintColor)),
+                Text("Excluded tags", style: TextStyle(color: Theme.of(context).hintColor)),
                 FilterTagsView(
                   addTag: viewModel.addXTag,
                   removeTag: viewModel.removeXTag,
@@ -137,8 +127,7 @@ class _SearchViewState extends State<SearchView> {
                 const SizedBox(height: rowSpacing),
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).colorScheme.background),
+                    style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.background),
                     child: const Text("Clear"),
                     onPressed: () => widget.onSetFilter(null),
                   ),

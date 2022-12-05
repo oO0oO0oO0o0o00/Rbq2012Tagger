@@ -23,8 +23,7 @@ import 'tags_of_selections.dart';
 class AlbumController with ChangeNotifier {
   final AlbumCoreStruct _albumCoreStruct;
 
-  late final SelectableListController _selectionController =
-      SelectableListController(onSelectionChanged: () {
+  late final SelectableListController _selectionController = SelectableListController(onSelectionChanged: () {
     _tagsOfSelections.invalidate();
     notifyListeners();
   });
@@ -39,10 +38,9 @@ class AlbumController with ChangeNotifier {
 
   double _itemHeight = 240.0;
 
-  AlbumController(AlbumCoreStruct albumCoreStruct)
-      : _albumCoreStruct = albumCoreStruct;
+  AlbumController(AlbumCoreStruct albumCoreStruct) : _albumCoreStruct = albumCoreStruct;
 
-  get selections => _selectionController.selections;
+  List<int> get selections => _selectionController.selections;
 
   int get numCols => _selectionController.numCols;
 
@@ -62,15 +60,13 @@ class AlbumController with ChangeNotifier {
     if (_oldItemHeight != _itemHeight) {
       changed = true;
     }
-    final newNumCols =
-        max(1, (width / itemHeight * preferredAspectRatio).floor());
+    final newNumCols = max(1, (width / itemHeight * preferredAspectRatio).floor());
     if (numCols != newNumCols) {
       changed = true;
     }
     if (changed) {
       final oldItemHeight = _oldItemHeight ?? _itemHeight;
-      scrollController
-          .jumpTo(position / oldItemHeight * numCols / newNumCols * itemHeight);
+      scrollController.jumpTo(position / oldItemHeight * numCols / newNumCols * itemHeight);
       _selectionController.numCols = newNumCols;
       _oldItemHeight = _itemHeight;
     }
@@ -79,8 +75,7 @@ class AlbumController with ChangeNotifier {
 
   void scroll(double amount) {
     scrollController.jumpTo(min(
-        max(scrollController.position.minScrollExtent,
-            scrollController.position.pixels + amount * 8),
+        max(scrollController.position.minScrollExtent, scrollController.position.pixels + amount * 8),
         scrollController.position.maxScrollExtent));
   }
 
@@ -100,58 +95,52 @@ class AlbumController with ChangeNotifier {
     }
   }
 
-  void updateSelection(int index, AlbumItemViewModel item) =>
-      _selectionController.updateSelection(index, item);
+  void updateSelection(int index, AlbumItemViewModel item) => _selectionController.updateSelection(index, item);
 
-  Future<void> addTagToSelected(String tag) async =>
-      toggleTagForSelected(tag, AlbumService.addTag);
+  Future<void> addTagToSelected(String tag) async => toggleTagForSelected(tag, AlbumService.addTag);
 
-  Future<void> removeTagFromSelected(String tag) async =>
-      toggleTagForSelected(tag, AlbumService.removeTag);
+  Future<void> removeTagFromSelected(String tag) async => toggleTagForSelected(tag, AlbumService.removeTag);
 
-  Future<void> toggleTagForSelected(String tag,
-      FutureOr<bool> Function(Album album, Tagged tagged) operation) async {
+  Future<void> toggleTagForSelected(String tag, FutureOr<bool> Function(Album album, Tagged tagged) operation) async {
     if (!_albumCoreStruct.model.dbReady) return;
     Iterable<int> selections;
     if (_selectionController.selections.isEmpty) return;
     selections = List.unmodifiable(_selectionController.selections);
     for (final selection in selections) {
       await operation(
-          _albumCoreStruct.model,
-          Tagged(
-              name: _albumCoreStruct.filteredContents![selection].name,
-              tag: tag));
-      _albumCoreStruct.cache![selection]
-          ?.updateTags(_albumCoreStruct.model, _albumCoreStruct.tagTemplates);
+          _albumCoreStruct.model, Tagged(name: _albumCoreStruct.filteredContents![selection].name, tag: tag));
+      _albumCoreStruct.cache![selection]?.updateTags(_albumCoreStruct.model, _albumCoreStruct.tagTemplates);
     }
     _tagsOfSelections.invalidate();
     notifyListeners();
   }
 
-  Future<void> removeTagFromItem(AlbumItemViewModel item, String tag) async {
+  Future<void> addTagToItem(AlbumItemViewModel item, String tag, {bool preventUpdate = false}) async =>
+      _toggleTagForItem(item, tag, preventUpdate: preventUpdate, operation: AlbumService.addTag);
+
+  Future<void> removeTagFromItem(AlbumItemViewModel item, String tag, {bool preventUpdate = false}) async =>
+      _toggleTagForItem(item, tag, preventUpdate: preventUpdate, operation: AlbumService.removeTag);
+
+  Future<void> _toggleTagForItem(AlbumItemViewModel item, String tag,
+      {bool preventUpdate = false, required FutureOr<bool> Function(Album album, Tagged tagged) operation}) async {
     if (!_albumCoreStruct.model.dbReady) return;
-    await AlbumService.removeTag(
-        _albumCoreStruct.model, Tagged(name: item.name, tag: tag));
+    await operation(_albumCoreStruct.model, Tagged(name: item.name, tag: tag));
     item.updateTags(_albumCoreStruct.model, _albumCoreStruct.tagTemplates);
-    _tagsOfSelections.invalidate();
-    notifyListeners();
+    if (!preventUpdate) {
+      _tagsOfSelections.invalidate();
+      notifyListeners();
+    }
   }
 
   int getTagsOfSelectedItemsCount(bool intersectionMode) {
     if (!_albumCoreStruct.model.dbReady) return 0;
-    final list = intersectionMode
-        ? _tagsOfSelections.intersection
-        : _tagsOfSelections.union;
+    final list = intersectionMode ? _tagsOfSelections.intersection : _tagsOfSelections.union;
     if (list != null && !_tagsOfSelections.invalid) {
       return list.length;
     }
     (() async {
-      await _tagsOfSelections.loadTags(
-          _albumCoreStruct.model,
-          _albumCoreStruct.tagTemplates,
-          _selectionController.selections
-              .map((e) => _albumCoreStruct.filteredContents![e].name)
-              .toList(),
+      await _tagsOfSelections.loadTags(_albumCoreStruct.model, _albumCoreStruct.tagTemplates,
+          _selectionController.selections.map((e) => _albumCoreStruct.filteredContents![e].name).toList(),
           intersectionMode: intersectionMode);
       notifyListeners();
     })();
@@ -159,17 +148,13 @@ class AlbumController with ChangeNotifier {
   }
 
   TaggedViewModel getTagOfSelectedItemsAt(int index, bool intersectionMode) {
-    final tagged = (intersectionMode
-        ? _tagsOfSelections.intersection
-        : _tagsOfSelections.union)![index];
+    final tagged = (intersectionMode ? _tagsOfSelections.intersection : _tagsOfSelections.union)![index];
     tagged.template = _albumCoreStruct.tagTemplates.getByName(tagged.tag);
     return tagged;
   }
 
-  void handleItemClick(int index,
-          {required bool isControlPressed, required bool isShiftPressed}) =>
-      _selectionController.handleItemClick(index,
-          isControlPressed: isControlPressed, isShiftPressed: isShiftPressed);
+  void handleItemClick(int index, {required bool isControlPressed, required bool isShiftPressed}) =>
+      _selectionController.handleItemClick(index, isControlPressed: isControlPressed, isShiftPressed: isShiftPressed);
 
   KeyEventResult handleKey(FocusNode n, RawKeyEvent e) {
     final selectionHandled = _selectionController.handleKey(e);
@@ -192,39 +177,35 @@ class AlbumController with ChangeNotifier {
       addTagToSelected(tag.name);
     }
     if (e.isShiftPressed) {
-      handleArrowMovement(const Tuple2(1, 0),
-          isControlPressed: false, isShiftPressed: false);
+      handleArrowMovement(const Tuple2(1, 0), isControlPressed: false, isShiftPressed: false);
       handleMoveSelection(itemHeight, scrollController);
     }
     return KeyEventResult.skipRemainingHandlers;
   }
 
-  void handleArrowMovement(Tuple2<int, int> movement,
-          {required bool isControlPressed, required bool isShiftPressed}) =>
+  void handleArrowMovement(Tuple2<int, int> movement, {required bool isControlPressed, required bool isShiftPressed}) =>
       _selectionController.handleArrowMovement(movement,
           isControlPressed: isControlPressed, isShiftPressed: isShiftPressed);
 
-  void handleMoveSelection(
-      double itemHeight, ScrollController scrollController) {
+  void handleMoveSelection(double itemHeight, ScrollController scrollController) {
     final int animateTarget = _selectionController.singleSelection;
-    final double animateOffset =
-        (animateTarget ~/ _selectionController.numCols).toDouble() * itemHeight;
+    final double animateOffset = (animateTarget ~/ _selectionController.numCols).toDouble() * itemHeight;
     final double? animateTo;
     final scrollPosition = scrollController.position.pixels;
     final viewportHeight = scrollController.position.viewportDimension;
     if (animateOffset < scrollPosition) {
       animateTo = animateOffset - itemHeight / 2;
-    } else if (animateOffset + itemHeight >
-        scrollController.position.pixels + viewportHeight) {
+    } else if (animateOffset + itemHeight > scrollController.position.pixels + viewportHeight) {
       animateTo = animateOffset - viewportHeight + itemHeight * 3 / 2;
     } else {
       animateTo = null;
     }
     if (animateTo != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await scrollController.animateTo(animateTo!,
-            duration: const Duration(milliseconds: 100), curve: Curves.ease);
+        await scrollController.animateTo(animateTo!, duration: const Duration(milliseconds: 100), curve: Curves.ease);
       });
     }
   }
+
+  void invalidateSelections() => _tagsOfSelections.invalidate();
 }
