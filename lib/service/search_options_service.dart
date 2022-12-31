@@ -18,7 +18,8 @@ class SearchOptionsService extends NamedConfigService<SearchOptions> {
         '${SearchOptions.colFromSizeKb} INT,'
         '${SearchOptions.colToSizeKb} INT,'
         '${SearchOptions.colTags} TEXT,'
-        '${SearchOptions.colXtags} TEXT) WITHOUT ROWID');
+        '${SearchOptions.colXtags} TEXT,'
+        '${SearchOptions.colConditionType} TEXT) WITHOUT ROWID');
   }
 
   @override

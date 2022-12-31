@@ -2,6 +2,14 @@ import 'dart:convert';
 
 import '../named_config.dart';
 
+class SearchOptionsConditionType {
+  static const and = "and";
+  static const or = "or";
+  static const defaultValue = and;
+  static const all = {and: and, or: or};
+  static String validate(String? value) => all[value] ?? and;
+}
+
 class SearchOptions implements NamedConfig {
   static const tableName = "search_options";
   static const colName = "name";
@@ -15,6 +23,7 @@ class SearchOptions implements NamedConfig {
   // Using json string instead of associated table.
   static const colTags = "tags";
   static const colXtags = "xtags";
+  static const colConditionType = "condition_type";
 
   final String name;
   String? byName;
@@ -25,6 +34,7 @@ class SearchOptions implements NamedConfig {
   int? toSizeKb;
   List<String> tags;
   List<String> xtags;
+  String conditionType;
 
   SearchOptions(
       {required this.name,
@@ -35,28 +45,20 @@ class SearchOptions implements NamedConfig {
       this.fromSizeKb,
       this.toSizeKb,
       this.tags = const [],
-      this.xtags = const []});
+      this.xtags = const [],
+      this.conditionType = SearchOptionsConditionType.defaultValue});
 
   SearchOptions.fromMap(Map<String, Object?> map)
       : name = map[colName] as String,
         byName = map[colByName] as String?,
-        byNameCase = map[colByNameCase] == null
-            ? null
-            : (map[colByNameCase] as int != 0),
-        fromTime = map[colFromTime] == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(map[colFromTime] as int),
-        toTime = map[colToTime] == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(map[colToTime] as int),
+        byNameCase = map[colByNameCase] == null ? null : (map[colByNameCase] as int != 0),
+        fromTime = map[colFromTime] == null ? null : DateTime.fromMillisecondsSinceEpoch(map[colFromTime] as int),
+        toTime = map[colToTime] == null ? null : DateTime.fromMillisecondsSinceEpoch(map[colToTime] as int),
         fromSizeKb = map[colFromSizeKb] as int?,
         toSizeKb = map[colToSizeKb] as int?,
-        tags = (jsonDecode(map[colTags] as String? ?? "[]") as List)
-            .map((e) => e as String)
-            .toList(),
-        xtags = (jsonDecode(map[colXtags] as String? ?? "[]") as List)
-            .map((e) => e as String)
-            .toList();
+        tags = (jsonDecode(map[colTags] as String? ?? "[]") as List).map((e) => e as String).toList(),
+        xtags = (jsonDecode(map[colXtags] as String? ?? "[]") as List).map((e) => e as String).toList(),
+        conditionType = SearchOptionsConditionType.validate(map[colConditionType] as String?);
 
   Map<String, Object?> toMap() => {
         colName: name,
@@ -67,6 +69,7 @@ class SearchOptions implements NamedConfig {
         colFromSizeKb: fromSizeKb,
         colToSizeKb: toSizeKb,
         colTags: jsonEncode(tags),
-        colXtags: jsonEncode(xtags)
+        colXtags: jsonEncode(xtags),
+        colConditionType: conditionType
       };
 }

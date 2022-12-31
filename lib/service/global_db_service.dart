@@ -12,10 +12,9 @@ import 'tag_templates_service.dart';
 
 /// Service for app-wide database.
 class GlobalDBService {
-  static const _schemaVersion = 5;
+  static const _schemaVersion = 6;
 
-  static String get _dbPath =>
-      path.join(File(Platform.resolvedExecutable).parent.path, "app.db");
+  static String get _dbPath => path.join(File(Platform.resolvedExecutable).parent.path, "app.db");
 
   static Database? _db;
 
@@ -32,15 +31,6 @@ class GlobalDBService {
             },
             onUpgrade: (db, oldVersion, newVersion) async {
               switch (oldVersion) {
-                case 3:
-                  await BatchActionService.createTable(db, newVersion);
-                  break;
-                case 4:
-                  await db.execute('ALTER TABLE ${BatchAction.tableName} '
-                      'ADD ${BatchAction.colConditionType} TEXT');
-                  await db.execute('ALTER TABLE ${BatchAction.tableName} '
-                      'ADD ${BatchAction.colActionType} TEXT');
-                  break;
                 default:
                   throw "wtf";
               }

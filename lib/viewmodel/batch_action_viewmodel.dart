@@ -77,24 +77,6 @@ class BatchActionViewModel with ChangeNotifier {
 
   List<String> get _tags => _model?.tags ?? const [];
 
-  String get conditionType =>
-      _model?.conditionType ?? BatchActionConditionType.defaultValue;
-
-  set conditionType(String value) {
-    if (value == _model?.conditionType) return;
-    _model?.conditionType = value;
-    save();
-  }
-
-  String get actionType =>
-      _model?.actionType ?? BatchActionActionType.defaultValue;
-
-  set actionType(String value) {
-    if (value == _model?.actionType) return;
-    _model?.actionType = value;
-    save();
-  }
-
   void addTag(String value) => _addRemoveTagTo(_tags, value, remove: false);
 
   void removeTag(String value) => _addRemoveTagTo(_tags, value, remove: true);
@@ -121,8 +103,7 @@ class BatchActionViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void _addRemoveTagTo(List<String> storage, String value,
-      {required bool remove}) {
+  void _addRemoveTagTo(List<String> storage, String value, {required bool remove}) {
     if (remove) {
       storage.remove(value);
     } else {

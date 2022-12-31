@@ -77,6 +77,14 @@ class SearchOptionsViewModel with ChangeNotifier {
 
   String getXTagAt(int index) => _xtags[index];
 
+  String get conditionType => _model?.conditionType ?? SearchOptionsConditionType.defaultValue;
+
+  set conditionType(String value) {
+    if (value == _model?.conditionType) return;
+    _model?.conditionType = value;
+    save();
+  }
+
   SearchOptionsViewModel();
 
   SearchOptions? getModel() => _model;
@@ -94,8 +102,7 @@ class SearchOptionsViewModel with ChangeNotifier {
     }
   }
 
-  void _addRemoveTagTo(List<String> storage, String value,
-      {required bool remove}) {
+  void _addRemoveTagTo(List<String> storage, String value, {required bool remove}) {
     if (remove) {
       storage.remove(value);
     } else {

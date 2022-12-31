@@ -17,9 +17,7 @@ class BatchActionService extends NamedConfigService<BatchAction> {
         '${BatchAction.colPath} TEXT,'
         '${BatchAction.colEnableTaggingAction} INT,'
         '${BatchAction.colTags} TEXT,'
-        '${BatchAction.colXtags} TEXT,'
-        '${BatchAction.colConditionType} TEXT,'
-        '${BatchAction.colActionType} TEXT) WITHOUT ROWID');
+        '${BatchAction.colXtags} TEXT) WITHOUT ROWID');
   }
 
   @override
