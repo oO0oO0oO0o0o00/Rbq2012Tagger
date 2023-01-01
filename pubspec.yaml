@@ -48,6 +48,7 @@ dependencies:
   popover: ^0.2.6+3
   intl: ^0.17.0
   filesize: ^2.0.1
+  just_the_tooltip: ^0.0.12
 
 dev_dependencies:
   flutter_test:

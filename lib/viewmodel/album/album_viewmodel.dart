@@ -142,8 +142,9 @@ class AlbumViewModel with ChangeNotifier {
       }
       if (filter.tags.isNotEmpty || filter.xtags.isNotEmpty) {
         final tags = await AlbumService.loadTags(_albumCoreStruct.model, item.name);
-        if (filter.tags.isNotEmpty && !tags.any(filter.tags.contains) ||
-            filter.xtags.isNotEmpty && tags.any(filter.xtags.contains)) {
+        final isAnd = filter.conditionType == SearchOptionsConditionType.and;
+        if (filter.tags.isNotEmpty && !((isAnd ? filter.tags.every : filter.tags.any)(tags.contains)) ||
+            filter.xtags.isNotEmpty && (isAnd ? filter.xtags.every : filter.xtags.any)(tags.contains)) {
           continue;
         }
       }
@@ -216,7 +217,7 @@ class AlbumViewModel with ChangeNotifier {
           }
         }
         for (var tag in itemTags) {
-          targetViewModel.controller.addTagToItem(dstItem, tag, preventUpdate: true);
+          await targetViewModel.controller.addTagToItem(dstItem, tag, preventUpdate: true);
         }
         // Copy or move.
         await AlbumService.importPictureFromAlbumItem(dest: dstItem.model, src: srcItem.model, copy: action.copy);
@@ -224,9 +225,9 @@ class AlbumViewModel with ChangeNotifier {
         if (!action.copy) {
           AlbumService.removeItemtags(_albumCoreStruct.model, srcItem.model);
         }
-        targetViewModel.notifyListeners();
-        releaseAlbumViewModel(targetViewModel.path, path);
       }
+      targetViewModel.notifyListeners();
+      releaseAlbumViewModel(targetViewModel.path, path);
     } else if (action.enableTaggingAction) {
       for (var item in selections) {
         final itemTags = item.getTags();

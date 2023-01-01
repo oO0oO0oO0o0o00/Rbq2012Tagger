@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
+import 'package:just_the_tooltip/just_the_tooltip.dart';
 import '../../../model/global/batch_action.dart';
 import '../../../service/batch_action_service.dart';
 import '../../../model/global/model.dart';
@@ -10,6 +11,7 @@ import '../../../viewmodel/tag_templates_viewmodel.dart';
 import '../../commons/checkbox_row.dart';
 import '../../commons/pick_album.dart';
 import '../sidetabs/filter_tags_view.dart';
+import '../sidetabs/sidetab_tooltip.dart';
 
 class ActionIcon extends StatelessWidget {
   final bool Function(BatchAction action) onConfirmed;
@@ -18,10 +20,12 @@ class ActionIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.bolt),
-      tooltip: "batch action",
-      onPressed: () => onBatchActions(context),
+    return SidetabTooltip(
+      message: "batch action",
+      child: IconButton(
+        icon: const Icon(Icons.bolt),
+        onPressed: () => onBatchActions(context),
+      ),
     );
   }
 
@@ -140,16 +144,6 @@ class ActionIcon extends StatelessWidget {
           getTagAt: (index) => viewModel.getTagAt(index),
         ),
       ),
-      // const Text("Condition type"),
-      // DropdownButton<String>(
-      //     value: viewModel.conditionType,
-      //     icon: const Icon(Icons.expand_more),
-      //     isExpanded: true,
-      //     onChanged: (String? value) => viewModel.conditionType =
-      //         value ?? BatchActionConditionType.defaultValue,
-      //     items: BatchActionConditionType.all.keys
-      //         .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
-      //         .toList()),
       const Text("Remove Tags"),
       ChangeNotifierProvider.value(
         value: tagTemplatesViewModel,
@@ -160,16 +154,6 @@ class ActionIcon extends StatelessWidget {
           getTagAt: (index) => viewModel.getXTagAt(index),
         ),
       ),
-      // const Text("Action type"),
-      // DropdownButton<String>(
-      //     value: viewModel.actionType,
-      //     icon: const Icon(Icons.expand_more),
-      //     isExpanded: true,
-      //     onChanged: (String? value) => viewModel.actionType =
-      //         value ?? BatchActionActionType.defaultValue,
-      //     items: BatchActionActionType.all.keys
-      //         .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
-      //         .toList()),
       const Text("For more complex logics, use the Python SDK instead."),
     ];
   }

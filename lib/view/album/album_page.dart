@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'package:provider/provider.dart';
 import 'package:tagger/model/global/model.dart';
+import 'package:tuple/tuple.dart';
 import '../../model/global/batch_action.dart';
 import '../../viewmodel/homepage_viewmodel.dart';
 import '../../model/global/search_options.dart';
@@ -18,6 +19,7 @@ import 'album_body.dart';
 import 'album_page_sidebar.dart';
 import 'sidetabs/bulk_tags_view.dart';
 import 'sidetabs/search_view.dart';
+import 'sidetabs/sidetab_tooltip.dart';
 import 'sidetabs/tag_templates_card_view.dart';
 
 class AlbumPage extends StatefulWidget {
@@ -100,7 +102,11 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
           Row(children: [
             AlbumPageSidebar(
               selectedIndex: _sideTabIndex,
-              tabIcons: const [Icon(Icons.bookmarks_outlined), Icon(Icons.fact_check_outlined), Icon(Icons.search)],
+              tabIcons: const [
+                Tuple2("templates", Icon(Icons.bookmarks_outlined)),
+                Tuple2("tags of selections", Icon(Icons.fact_check_outlined)),
+                Tuple2("filter", Icon(Icons.search)),
+              ],
               actionIcons: [
                 if (Provider.of<AlbumViewModel>(context).filter != null) const FilterIcon(offset: Offset(64, 0)),
                 ActionIcon(onConfirmed: _applyAction, currentPath: widget.path),

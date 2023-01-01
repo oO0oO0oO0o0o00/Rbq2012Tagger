@@ -125,6 +125,17 @@ class _SearchViewState extends State<SearchView> {
                   getTagAt: viewModel.getXTagAt,
                 ),
                 const SizedBox(height: rowSpacing),
+                const Text("Condition type"),
+                DropdownButton<String>(
+                    value: viewModel.conditionType,
+                    icon: const Icon(Icons.expand_more),
+                    isExpanded: true,
+                    onChanged: (String? value) =>
+                        viewModel.conditionType = value ?? SearchOptionsConditionType.defaultValue,
+                    items: SearchOptionsConditionType.all.keys
+                        .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                        .toList()),
+                const SizedBox(height: rowSpacing),
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.background),
@@ -136,7 +147,7 @@ class _SearchViewState extends State<SearchView> {
                     child: const Text("Filter"),
                     onPressed: () => widget.onSetFilter(viewModel.getModel()!),
                   )
-                ])
+                ]),
               ],
             ),
           ),

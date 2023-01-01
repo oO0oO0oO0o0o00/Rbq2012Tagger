@@ -14,24 +14,15 @@ class BatchAction implements NamedConfig {
   static const colXtags = "xtags";
 
   final String _name;
-  bool enableMoveCopyAction;
-  bool selectionOnly;
-  bool copy;
+  bool enableMoveCopyAction = true;
+  bool selectionOnly = true;
+  bool copy = false;
   String? path;
-  bool enableTaggingAction;
-  List<String> tags;
-  List<String> xtags;
+  bool enableTaggingAction = false;
+  List<String> tags = [];
+  List<String> xtags = [];
 
-  BatchAction(
-      {required name,
-      this.enableMoveCopyAction = true,
-      this.selectionOnly = true,
-      this.copy = false,
-      this.path,
-      this.enableTaggingAction = false,
-      this.tags = const [],
-      this.xtags = const []})
-      : _name = name;
+  BatchAction({required name}) : _name = name;
 
   @override
   String get name => _name;
