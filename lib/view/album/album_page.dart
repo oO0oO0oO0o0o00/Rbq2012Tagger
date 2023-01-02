@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'package:provider/provider.dart';
+import 'package:tabbed_view/tabbed_view.dart';
 import 'package:tagger/model/global/model.dart';
 import 'package:tuple/tuple.dart';
 import '../../model/global/batch_action.dart';
@@ -51,6 +53,8 @@ class AlbumPage extends StatefulWidget {
 
 class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
   late final AlbumViewModel viewModel;
+  // Focus node for receiving keyboard shortcuts.
+  late final FocusNode _focus;
   late final _tabController = TabController(length: 3, vsync: this);
   bool _showSideTab = true;
   int _sideTabIndex = 0;
@@ -60,12 +64,14 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _focus = FocusNode(debugLabel: 'albumScope');
     viewModel = widget.getViewModel(widget.path, widget.path);
     _load(context);
   }
 
   @override
   void dispose() {
+    _focus.dispose();
     widget.releaseAlbumViewModel(null, widget.path);
     super.dispose();
   }
@@ -97,6 +103,21 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
           ],
         );
         // A stack is used to show progress bar above.
+        final listenedViewModel = Provider.of<AlbumViewModel>(context);
+        final body = Focus(
+            focusNode: _focus,
+            autofocus: true,
+            // Keyboard shortcuts (both navigation and tags) are listened here.
+            onKey: (node, e) {
+              // if (e.isAltPressed)
+              if (e is! RawKeyDownEvent) return KeyEventResult.ignored;
+              if (e.logicalKey == LogicalKeyboardKey.delete) {
+                _handleDeleteAction();
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            },
+            child: AlbumBody(key: _bodyKey));
         return Stack(children: [
           // Basically it's Row([side bar, MultiSplitView([side tab, body])]).
           Row(children: [
@@ -108,7 +129,8 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
                 Tuple2("filter", Icon(Icons.search)),
               ],
               actionIcons: [
-                if (Provider.of<AlbumViewModel>(context).filter != null) const FilterIcon(offset: Offset(64, 0)),
+                if (listenedViewModel.controller.selections.isNotEmpty) _buildDeleteIcon(),
+                if (listenedViewModel.filter != null) const FilterIcon(offset: Offset(64, 0)),
                 ActionIcon(onConfirmed: _applyAction, currentPath: widget.path),
                 const SortIcon(offset: Offset(64, 0))
               ],
@@ -118,15 +140,23 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
               // `MultiSplitView` does not play well with `Offstage`.
               child: _showSideTab
                   ? MultiSplitView(
-                      children: [sideTab, AlbumBody(key: _bodyKey)],
+                      children: [sideTab, body],
                       initialWeights: const [.2, .8],
                     )
-                  : Stack(children: [Offstage(offstage: true, child: sideTab), AlbumBody(key: _bodyKey)]),
+                  : Stack(children: [Offstage(offstage: true, child: sideTab), body]),
             ),
           ]),
           if (context.read<AlbumViewModel>().loading) const LinearProgressIndicator(),
         ]);
       }(true));
+
+  Widget _buildDeleteIcon() => SidetabTooltip(
+        message: "delete",
+        child: IconButton(
+          icon: const Icon(Icons.delete_outline),
+          onPressed: _handleDeleteAction,
+        ),
+      );
 
   Widget _buildForMobile(BuildContext context) => Scaffold(
       appBar: AppBar(
@@ -183,4 +213,6 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
     }
     return true;
   }
+
+  Future<void> _handleDeleteAction() async {}
 }
