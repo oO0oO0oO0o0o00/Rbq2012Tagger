@@ -1,9 +1,9 @@
 import '../named_config.dart';
 
 class TutorialOption implements NamedConfig {
-  static const tableName = "batch_action";
+  static const tableName = "tutorial_option";
   static const colName = "name";
-  static const colNameCounter = "counter";
+  static const colCounter = "counter";
 
   final String _name;
   int counter = 0;
@@ -15,8 +15,8 @@ class TutorialOption implements NamedConfig {
 
   TutorialOption.fromMap(Map<String, Object?> map)
       : _name = map[colName] as String,
-        counter = map[colNameCounter] as int;
+        counter = map[colCounter] as int;
 
   @override
-  Map<String, Object?> toMap() => {colName: name, colNameCounter: counter};
+  Map<String, Object?> toMap() => {colName: name, colCounter: counter};
 }

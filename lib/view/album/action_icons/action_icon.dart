@@ -53,6 +53,7 @@ class ActionIcon extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
+                      if (getEffectivePath(viewModel) == null) return;
                       if (onConfirmed(viewModel.getModel()!)) {
                         Navigator.pop(context, null);
                       }
@@ -111,7 +112,7 @@ class ActionIcon extends StatelessWidget {
         children: [
           Flexible(
             child: DropdownButton<RecentAlbum>(
-                value: viewModel.path,
+                value: getEffectivePath(viewModel),
                 icon: const Icon(Icons.expand_more),
                 hint: const Text("Select ..."),
                 isExpanded: true,
@@ -130,6 +131,9 @@ class ActionIcon extends StatelessWidget {
       )
     ];
   }
+
+  RecentAlbum? getEffectivePath(BatchActionViewModel viewModel) =>
+      viewModel.path?.path == currentPath ? null : viewModel.path;
 
   List<Widget> _buildTaggingActionContent(
       BuildContext context, BatchActionViewModel viewModel, TagTemplatesViewModel tagTemplatesViewModel) {

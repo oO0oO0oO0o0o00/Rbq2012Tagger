@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:tuple/tuple.dart';
@@ -44,7 +45,7 @@ class AlbumService {
       });
 
   static Future<void> loadContents(Album album) async {
-    album.contents ??= await Directory(album.path)
+    album.contents = await Directory(album.path)
         .list()
         .asyncMap((entity) async {
           var stat = await entity.stat();
@@ -99,8 +100,10 @@ class AlbumService {
     return AlbumItem(file.path, dateTime: item.dateTime, fileSizeBytes: item.fileSizeBytes);
   }
 
-  static Future<void> removeItemtags(Album album, AlbumItem item) async {
-    (await getDatabase(album)).delete(Tagged.tableName, where: "${Tagged.colName} == ?", whereArgs: [item.name]);
+  static Future<void> removeItemTags(Album album, AlbumItem item) async => await removeTags(album, item.name);
+
+  static Future<void> removeTags(Album album, String pictureName) async {
+    (await getDatabase(album)).delete(Tagged.tableName, where: "${Tagged.colName} == ?", whereArgs: [pictureName]);
   }
 
   static Future<Iterable<String>> loadTags(Album album, String pictureName) async => (await (await getDatabase(album))
@@ -137,5 +140,18 @@ class AlbumService {
             ].join(" $op "),
             pictures))
         .map((e) => e[Tagged.colTag] as String);
+  }
+
+  static Future<void> moveToRecycle(Album album, String pictureName, DateTime time, {List<String>? tags}) async {
+    final tagsValue = tags ?? (await loadTags(album, pictureName)).toList();
+    final baseName = path.basenameWithoutExtension(pictureName) + DateFormat("-yyMMdd_hhmmss").format(time);
+    final recyclePath = path.join(_getSavDir(album), "recycle");
+    await Directory(recyclePath).create();
+    if (tagsValue.isNotEmpty) {
+      await File(path.join(recyclePath, "$baseName.json")).writeAsString(json.encode(tagsValue));
+    }
+    await File(path.join(album.path, pictureName))
+        .rename(path.join(recyclePath, "$baseName.${path.extension(pictureName)}"));
+    await removeTags(album, pictureName);
   }
 }

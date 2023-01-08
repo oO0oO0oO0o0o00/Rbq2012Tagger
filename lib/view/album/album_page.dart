@@ -4,6 +4,7 @@ import 'package:multi_split_view/multi_split_view.dart';
 import 'package:provider/provider.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 import 'package:tagger/model/global/model.dart';
+import 'package:tagger/service/tutorial_service.dart';
 import 'package:tuple/tuple.dart';
 import '../../model/global/batch_action.dart';
 import '../../viewmodel/homepage_viewmodel.dart';
@@ -131,7 +132,8 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
               actionIcons: [
                 if (listenedViewModel.controller.selections.isNotEmpty) _buildDeleteIcon(),
                 if (listenedViewModel.filter != null) const FilterIcon(offset: Offset(64, 0)),
-                ActionIcon(onConfirmed: _applyAction, currentPath: widget.path),
+                if (listenedViewModel.controller.selections.isNotEmpty)
+                  ActionIcon(onConfirmed: _applyAction, currentPath: widget.path),
                 const SortIcon(offset: Offset(64, 0))
               ],
               onSelectSideTab: _onSelectTab,
@@ -214,5 +216,16 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
     return true;
   }
 
-  Future<void> _handleDeleteAction() async {}
+  Future<void> _handleDeleteAction() async {
+    if (await TutorialService.instance.shouldShow(TutorialService.kDeletionNotice, 2, increase: true)) {
+      await showConfirmationDialog(context,
+          content: "Deleted items would be moved to the recycle folder of the album, "
+              "along with a json file containing their tags. "
+              "You can manage deleted items with the file browser, "
+              "and restore them with scripts.",
+          title: "Deletion...",
+          hasNegativeButton: false);
+    }
+    await viewModel.performDeletion();
+  }
 }

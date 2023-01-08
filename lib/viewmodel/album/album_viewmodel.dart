@@ -91,8 +91,8 @@ class AlbumViewModel with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  Future<void> loadContents() async {
-    if (_albumCoreStruct.model.contents != null) return;
+  Future<void> loadContents({ReloadMode reload = ReloadMode.no}) async {
+    if (_albumCoreStruct.model.contents == null ? reload == ReloadMode.onlyLoaded : reload == ReloadMode.no) return;
     await AlbumService.loadContents(_albumCoreStruct.model);
     _sort();
     notifyListeners();
@@ -223,10 +223,11 @@ class AlbumViewModel with ChangeNotifier {
         await AlbumService.importPictureFromAlbumItem(dest: dstItem.model, src: srcItem.model, copy: action.copy);
         // Remove local tags for moved file.
         if (!action.copy) {
-          AlbumService.removeItemtags(_albumCoreStruct.model, srcItem.model);
+          AlbumService.removeItemTags(_albumCoreStruct.model, srcItem.model);
         }
       }
       targetViewModel.notifyListeners();
+      targetViewModel.loadContents(reload: ReloadMode.onlyLoaded);
       releaseAlbumViewModel(targetViewModel.path, path);
     } else if (action.enableTaggingAction) {
       for (var item in selections) {
@@ -241,8 +242,24 @@ class AlbumViewModel with ChangeNotifier {
         }
       }
     }
-    controller.invalidateSelections();
-    notifyListeners();
+    if (action.enableMoveCopyAction && !action.copy) {
+      loadContents(reload: ReloadMode.always);
+    } else {
+      controller.invalidateSelections();
+      notifyListeners();
+    }
+    loading = false;
+  }
+
+  Future<void> performDeletion() async {
+    loading = true;
+    final time = DateTime.now();
+    for (final selection in controller.selections.map((e) => getItem(e))) {
+      AlbumService.moveToRecycle(_albumCoreStruct.model, selection.name, time);
+    }
+    loadContents(reload: ReloadMode.always);
     loading = false;
   }
 }
+
+enum ReloadMode { no, onlyLoaded, always }
