@@ -24,6 +24,7 @@ class FilterTagsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
+    // print(context.read<TagTemplatesViewModel>());
     return Container(
         padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
         width: double.infinity,

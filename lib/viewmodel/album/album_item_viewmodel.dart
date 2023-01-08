@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:collection';
+import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
@@ -16,6 +18,8 @@ class AlbumItemViewModel with ChangeNotifier, Selectable {
   final List<TaggedViewModel> _tags = [];
 
   AlbumItemViewModel(this._model);
+
+  AlbumItem get model => _model;
 
   String get path => _model.path;
 
@@ -37,8 +41,9 @@ class AlbumItemViewModel with ChangeNotifier, Selectable {
 
   TaggedViewModel getTagAt(int index) => _tags[index];
 
-  Future<void> updateTags(
-      Album album, TagTemplatesViewModel tagTemplates) async {
+  List<TaggedViewModel> getTags() => UnmodifiableListView(_tags);
+
+  Future<void> updateTags(Album album, TagTemplatesViewModel tagTemplates) async {
     final tags = await AlbumService.loadTags(album, _model.name);
     _tags.clear();
     _tags.addAll(tags.map((e) => TaggedViewModel(e)));

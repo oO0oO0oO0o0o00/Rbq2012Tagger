@@ -1,25 +1,31 @@
 import 'dart:async';
-import 'package:flutter/widgets.dart';
-import 'package:tagger/model/model.dart';
+import 'dart:io';
 
-import '../../model/global/model.dart';
+import 'package:flutter/widgets.dart';
+import 'package:tuple/tuple.dart';
+
+import '../../model/file_conflict_resolve_config.dart';
+import '../../model/global/batch_action.dart';
+import '../../model/global/search_options.dart';
+import '../../model/model.dart';
 import '../../service/album_service.dart';
 import '../../util/search.dart';
 import '../tag_templates_viewmodel.dart';
+import 'album_controller.dart';
 import 'album_core_struct.dart';
 import 'album_item_viewmodel.dart';
 import 'album_items_sort_mode_viewmodel.dart';
-import 'album_controller.dart';
 
 /// View model for [AlbumPage].
 ///
 /// Different from [AlbumController], this view model
 /// handles more basic operations.
 class AlbumViewModel with ChangeNotifier {
-  AlbumItemsSortModeViewModel _sortMode =
-      AlbumItemsSortModeViewModel.defaultMode;
+  AlbumItemsSortModeViewModel _sortMode = AlbumItemsSortModeViewModel.defaultMode;
 
   SearchOptions? _filter;
+
+  var _loading = false;
 
   late final AlbumCoreStruct _albumCoreStruct;
 
@@ -27,10 +33,17 @@ class AlbumViewModel with ChangeNotifier {
   /// and highly UI-related functionalities.
   late final AlbumController controller;
 
+  bool get loading => _loading;
+
+  set loading(bool value) {
+    if (_loading == value) return;
+    _loading = value;
+    notifyListeners();
+  }
+
   AlbumViewModel(String path, {required TagTemplatesViewModel tagTemplates})
       : _albumCoreStruct = AlbumCoreStruct(path, tagTemplates: tagTemplates) {
-    controller = AlbumController(_albumCoreStruct)
-      ..addListener(notifyListeners);
+    controller = AlbumController(_albumCoreStruct)..addListener(notifyListeners);
   }
 
   /// The mode with which items are sorted.
@@ -56,11 +69,9 @@ class AlbumViewModel with ChangeNotifier {
   String get pathForDisplay => _albumCoreStruct.model.path;
   bool get dbReady => _albumCoreStruct.model.dbReady;
 
-  Future<bool> isManaged() async =>
-      AlbumService.isManaged(_albumCoreStruct.model);
+  Future<bool> isManaged() async => AlbumService.isManaged(_albumCoreStruct.model);
 
-  Future<void> openDatabase() async =>
-      await AlbumService.getDatabase(_albumCoreStruct.model);
+  Future<void> openDatabase() async => await AlbumService.getDatabase(_albumCoreStruct.model);
 
   @override
   void dispose() {
@@ -73,15 +84,15 @@ class AlbumViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> load() async {
-    if (_albumCoreStruct.model.contents != null) return;
-    await AlbumService.loadContents(_albumCoreStruct.model);
-    _sort();
-    notifyListeners();
-  }
+  // Future<void> load() async {
+  //   if (_albumCoreStruct.model.contents != null) return;
+  //   await AlbumService.loadContents(_albumCoreStruct.model);
+  //   _sort();
+  //   notifyListeners();
+  // }
 
-  Future<void> loadContents() async {
-    if (_albumCoreStruct.model.contents != null) return;
+  Future<void> loadContents({ReloadMode reload = ReloadMode.no}) async {
+    if (_albumCoreStruct.model.contents == null ? reload == ReloadMode.onlyLoaded : reload == ReloadMode.no) return;
     await AlbumService.loadContents(_albumCoreStruct.model);
     _sort();
     notifyListeners();
@@ -105,8 +116,7 @@ class AlbumViewModel with ChangeNotifier {
 
   void _sort() async {
     _albumCoreStruct.filteredContents = await _getFiltered(_filter);
-    final cache = _albumCoreStruct.cache =
-        List.filled(_albumCoreStruct.filteredContents!.length, null);
+    final cache = _albumCoreStruct.cache = List.filled(_albumCoreStruct.filteredContents!.length, null);
     controller.reset(cache.length);
     sortMode.sort(_albumCoreStruct.filteredContents!, sortMode.reversed);
   }
@@ -127,15 +137,14 @@ class AlbumViewModel with ChangeNotifier {
           toSizeKb != null && item.fileSizeBytes ~/ 1024 > toSizeKb) {
         continue;
       }
-      if (fromTime != null && item.dateTime.isBefore(fromTime) ||
-          toTime != null && item.dateTime.isAfter(toTime)) {
+      if (fromTime != null && item.dateTime.isBefore(fromTime) || toTime != null && item.dateTime.isAfter(toTime)) {
         continue;
       }
       if (filter.tags.isNotEmpty || filter.xtags.isNotEmpty) {
-        final tags =
-            await AlbumService.loadTags(_albumCoreStruct.model, item.name);
-        if (filter.tags.isNotEmpty && !tags.any(filter.tags.contains) ||
-            filter.xtags.isNotEmpty && tags.any(filter.xtags.contains)) {
+        final tags = await AlbumService.loadTags(_albumCoreStruct.model, item.name);
+        final isAnd = filter.conditionType == SearchOptionsConditionType.and;
+        if (filter.tags.isNotEmpty && !((isAnd ? filter.tags.every : filter.tags.any)(tags.contains)) ||
+            filter.xtags.isNotEmpty && (isAnd ? filter.xtags.every : filter.xtags.any)(tags.contains)) {
           continue;
         }
       }
@@ -143,4 +152,114 @@ class AlbumViewModel with ChangeNotifier {
     }
     return filtered;
   }
+
+  Future<void> performBatchAction(BatchAction action,
+      {required AlbumViewModel Function(String path, String referredBy) getAlbumViewModel,
+      required void Function(String path, String referredBy) releaseAlbumViewModel,
+      required Future<Map<String, FileConflictAction>?> Function(List<Tuple2<File, File>> conflicts)
+          conflictResolver}) async {
+    loading = true;
+    final destFolder = action.path!;
+    final selections = controller.selections.map((e) => getItem(e)).toList();
+    if (action.enableMoveCopyAction) {
+      final targetViewModel = getAlbumViewModel(destFolder, path);
+      if (targetViewModel.loading) {
+        throw "why is it loading";
+      }
+      if (!targetViewModel.dbReady) {
+        await targetViewModel.openDatabase();
+      }
+      // Preflight and handle file conflicts.
+      List<Tuple2<AlbumItemViewModel, AlbumItemViewModel>> jobs = [];
+      List<Tuple2<File, File>> conflicts = [];
+      for (var item in selections) {
+        final preflightResult =
+            await AlbumService.preflightImportFromAlbumItem(targetViewModel._albumCoreStruct.model, item.model);
+        if (preflightResult.item2 != null) {
+          conflicts.add(preflightResult.item2!);
+        }
+        jobs.add(Tuple2(item, AlbumItemViewModel(preflightResult.item1)));
+      }
+      final Map<String, FileConflictAction>? conflictActions;
+      if (conflicts.isNotEmpty) {
+        conflictActions = await conflictResolver(conflicts);
+      } else {
+        conflictActions = {};
+      }
+      if (conflictActions == null) {
+        loading = false;
+        return;
+      }
+      // Process for each item.
+      for (var job in jobs) {
+        final srcItem = job.item1;
+        var dstItem = job.item2;
+        // Apply conflict handling.
+        final conflictAction = conflictActions[dstItem.path];
+        switch (conflictAction) {
+          case FileConflictAction.skip:
+            continue;
+          case FileConflictAction.overwrite:
+          case null:
+            break;
+          case FileConflictAction.rename:
+            dstItem = AlbumItemViewModel(await AlbumService.useNextAvailableName(dstItem.model));
+            break;
+        }
+        // Migration of tags.
+        var itemTags = srcItem.getTags().map((e) => e.tag).toSet();
+        if (action.enableTaggingAction) {
+          for (var newTag in action.tags) {
+            itemTags.add(newTag);
+          }
+          for (var oldTag in action.xtags) {
+            itemTags.remove(oldTag);
+          }
+        }
+        for (var tag in itemTags) {
+          await targetViewModel.controller.addTagToItem(dstItem, tag, preventUpdate: true);
+        }
+        // Copy or move.
+        await AlbumService.importPictureFromAlbumItem(dest: dstItem.model, src: srcItem.model, copy: action.copy);
+        // Remove local tags for moved file.
+        if (!action.copy) {
+          AlbumService.removeItemTags(_albumCoreStruct.model, srcItem.model);
+        }
+      }
+      targetViewModel.notifyListeners();
+      targetViewModel.loadContents(reload: ReloadMode.onlyLoaded);
+      releaseAlbumViewModel(targetViewModel.path, path);
+    } else if (action.enableTaggingAction) {
+      for (var item in selections) {
+        final itemTags = item.getTags();
+        for (var newTag in action.tags) {
+          if (itemTags.any((element) => element.tag == newTag)) continue;
+          await controller.addTagToItem(item, newTag, preventUpdate: true);
+        }
+        for (var oldTag in action.xtags) {
+          if (!itemTags.any((element) => element.tag == oldTag)) continue;
+          await controller.removeTagFromItem(item, oldTag, preventUpdate: true);
+        }
+      }
+    }
+    if (action.enableMoveCopyAction && !action.copy) {
+      loadContents(reload: ReloadMode.always);
+    } else {
+      controller.invalidateSelections();
+      notifyListeners();
+    }
+    loading = false;
+  }
+
+  Future<void> performDeletion() async {
+    loading = true;
+    final time = DateTime.now();
+    for (final selection in controller.selections.map((e) => getItem(e))) {
+      AlbumService.moveToRecycle(_albumCoreStruct.model, selection.name, time);
+    }
+    loadContents(reload: ReloadMode.always);
+    loading = false;
+  }
 }
+
+enum ReloadMode { no, onlyLoaded, always }

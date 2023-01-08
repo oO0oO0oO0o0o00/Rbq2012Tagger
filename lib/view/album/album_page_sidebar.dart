@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:tuple/tuple.dart';
+
+import 'sidetabs/sidetab_tooltip.dart';
 
 /// Side bar on the starting side of the album page
 /// containing side tab icons and action buttons.
 class AlbumPageSidebar extends StatelessWidget {
   final int selectedIndex;
-  final List<Widget> tabIcons;
+  final List<Tuple2<String, Widget>> tabIcons;
   final List<Widget> actionIcons;
   final void Function(int index) onSelectSideTab;
 
@@ -27,7 +30,7 @@ class AlbumPageSidebar extends StatelessWidget {
         color: Theme.of(context).hintColor,
         selectedBorderColor: Colors.transparent,
         children: tabIcons
-            .map((e) => SizedBox(width: 64, height: 64, child: e))
+            .map((e) => SidetabTooltip(message: e.item1, child: SizedBox(width: 64, height: 64, child: e.item2)))
             .toList(),
         isSelected: selected,
         direction: Axis.vertical,
@@ -37,8 +40,7 @@ class AlbumPageSidebar extends StatelessWidget {
       for (final icon in actionIcons)
         Theme(
           child: icon,
-          data: theme.copyWith(
-              iconTheme: theme.iconTheme.copyWith(color: theme.hintColor)),
+          data: theme.copyWith(iconTheme: theme.iconTheme.copyWith(color: theme.hintColor)),
         )
     ]);
   }

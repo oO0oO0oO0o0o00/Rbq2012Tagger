@@ -84,7 +84,7 @@ class _ConfirmationDialogState extends State<ConfirmationDialog> {
         child: AlertDialog(
             title: Text(widget.title ?? "Confirmation"),
             content: Text(widget.content),
-            actions: <Widget>[
+            actions: [
               if (widget.hasNeutralButton)
                 TextButton(
                   onPressed: () => Navigator.pop(context, null),

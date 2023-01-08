@@ -1,8 +1,13 @@
-import '../model/global/model.dart';
-import 'global_db_service.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
-class SearchOptionsService {
+import '../model/global/search_options.dart';
+import 'named_config_service.dart';
+
+class SearchOptionsService extends NamedConfigService<SearchOptions> {
+  static SearchOptionsService instance = SearchOptionsService._();
+
+  SearchOptionsService._();
+
   static Future<void> createTable(Database db, int version) async {
     await db.execute('CREATE TABLE ${SearchOptions.tableName} ('
         '${SearchOptions.colName} TEXT PRIMARY KEY, '
@@ -13,27 +18,16 @@ class SearchOptionsService {
         '${SearchOptions.colFromSizeKb} INT,'
         '${SearchOptions.colToSizeKb} INT,'
         '${SearchOptions.colTags} TEXT,'
-        '${SearchOptions.colXtags} TEXT) WITHOUT ROWID');
+        '${SearchOptions.colXtags} TEXT,'
+        '${SearchOptions.colConditionType} TEXT) WITHOUT ROWID');
   }
 
-  static Future<SearchOptions> getDefault() async {
-    return await get("") ?? SearchOptions(name: "");
-  }
+  @override
+  String get tableName => SearchOptions.tableName;
 
-  static Future<SearchOptions?> get(String name) async {
-    // await (await GlobalDBService.getDB())
-    //     .execute('drop table ${SearchOptions.tableName}');
-    // await createTable(await GlobalDBService.getDB(), 2);
-    var list = await (await GlobalDBService.getDB()).query(
-        SearchOptions.tableName,
-        distinct: true,
-        where: "name == ?",
-        whereArgs: [name]);
-    return list.isEmpty ? null : SearchOptions.fromMap((list).first);
-  }
+  @override
+  SearchOptions buildEmpty({required String name}) => SearchOptions(name: name);
 
-  static Future<void> save(SearchOptions searchOptions) async =>
-      await (await GlobalDBService.getDB()).insert(
-          SearchOptions.tableName, searchOptions.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace);
+  @override
+  SearchOptions fromMap(Map<String, Object?> map) => SearchOptions.fromMap(map);
 }

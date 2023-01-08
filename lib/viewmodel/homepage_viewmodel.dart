@@ -21,6 +21,17 @@ class HomePageViewModel with ChangeNotifier {
     return null;
   }
 
+  RecentAlbum? getByPath(String path) {
+    final recentItems = _recentItems;
+    if (recentItems != null) {
+      return recentItems.firstWhere((element) => element.path == path,
+          orElse: () =>
+              RecentAlbum(path, lastOpened: DateTime.now(), pinned: false));
+    }
+    _loadRecentItems();
+    return null;
+  }
+
   int getItemsCount() {
     final recentItems = _recentItems;
     if (recentItems != null) {

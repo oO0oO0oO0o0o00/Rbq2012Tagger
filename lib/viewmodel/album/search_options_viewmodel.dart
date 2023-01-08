@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../model/global/model.dart';
+import '../../model/global/search_options.dart';
 import '../../service/search_options_service.dart';
 import '../../util/inputs.dart';
 
@@ -9,85 +9,81 @@ class SearchOptionsViewModel with ChangeNotifier {
 
   String get byName => _model?.byName ?? "";
 
-  set byName(String val) {
-    final model = _model;
-    if (model == null || val == model.byName) return;
-    model.byName = val;
-    notifyListeners();
+  set byName(String value) {
+    if (value == _model?.byName) return;
+    _model?.byName = value;
     save();
   }
 
   bool get byNameCase => _model?.byNameCase ?? false;
 
   set byNameCase(bool value) {
-    final model = _model;
-    if (model == null || value == model.byNameCase) return;
-    model.byNameCase = value;
-    notifyListeners();
+    if (value == _model?.byNameCase) return;
+    _model?.byNameCase = value;
     save();
   }
 
   DateTime? get fromTime => _model?.fromTime;
 
   set fromTime(DateTime? value) {
-    final model = _model;
-    if (model == null || value == model.fromTime) return;
-    model.fromTime = value;
-    notifyListeners();
+    if (value == _model?.fromTime) return;
+    _model?.fromTime = value;
     save();
   }
 
   DateTime? get toTime => _model?.toTime;
 
   set toTime(DateTime? value) {
-    final model = _model;
-    if (model == null || value == model.toTime) return;
-    model.toTime = value;
-    notifyListeners();
+    if (value == _model?.toTime) return;
+    _model?.toTime = value;
     save();
   }
 
   String get fromSizeKb => stringifyOptionalInt(_model?.fromSizeKb);
 
   set fromSizeKb(String value) {
-    final model = _model;
     final intVal = parseOptionalInt(value);
-    if (model == null || intVal == model.fromSizeKb) return;
-    model.fromSizeKb = intVal;
-    notifyListeners();
+    if (intVal == _model?.fromSizeKb) return;
+    _model?.fromSizeKb = intVal;
     save();
   }
 
   String get toSizeKb => stringifyOptionalInt(_model?.toSizeKb);
 
   set toSizeKb(String value) {
-    final model = _model;
     final intVal = parseOptionalInt(value);
-    if (model == null || intVal == model.toSizeKb) return;
-    model.toSizeKb = intVal;
-    notifyListeners();
+    if (intVal == _model?.toSizeKb) return;
+    _model?.toSizeKb = intVal;
     save();
   }
 
-  List<String> get tags => _model?.tags ?? const [];
+  List<String> get _tags => _model?.tags ?? const [];
 
-  void addTag(String value) => _addRemoveTagTo(tags, value, remove: false);
+  void addTag(String value) => _addRemoveTagTo(_tags, value, remove: false);
 
-  void removeTag(String value) => _addRemoveTagTo(tags, value, remove: true);
+  void removeTag(String value) => _addRemoveTagTo(_tags, value, remove: true);
 
-  int getTagsCount() => tags.length;
+  int getTagsCount() => _tags.length;
 
-  String getTagAt(int index) => tags[index];
+  String getTagAt(int index) => _tags[index];
 
-  List<String> get xtags => _model?.xtags ?? const [];
+  List<String> get _xtags => _model?.xtags ?? const [];
 
-  void addXTag(String value) => _addRemoveTagTo(xtags, value, remove: false);
+  void addXTag(String value) => _addRemoveTagTo(_xtags, value, remove: false);
 
-  void removeXTag(String value) => _addRemoveTagTo(xtags, value, remove: true);
+  void removeXTag(String value) => _addRemoveTagTo(_xtags, value, remove: true);
 
-  int getXTagsCount() => xtags.length;
+  int getXTagsCount() => _xtags.length;
 
-  String getXTagAt(int index) => xtags[index];
+  String getXTagAt(int index) => _xtags[index];
+
+  String get conditionType => _model?.conditionType ?? SearchOptionsConditionType.defaultValue;
+
+  set conditionType(String value) {
+    if (value == _model?.conditionType) return;
+    _model?.conditionType = value;
+    save();
+  }
 
   SearchOptionsViewModel();
 
@@ -101,12 +97,12 @@ class SearchOptionsViewModel with ChangeNotifier {
   Future<void> save() async {
     final model = _model;
     if (model != null) {
-      await SearchOptionsService.save(model);
+      await SearchOptionsService.instance.save(model);
+      notifyListeners();
     }
   }
 
-  void _addRemoveTagTo(List<String> storage, String value,
-      {required bool remove}) {
+  void _addRemoveTagTo(List<String> storage, String value, {required bool remove}) {
     if (remove) {
       storage.remove(value);
     } else {
@@ -114,6 +110,5 @@ class SearchOptionsViewModel with ChangeNotifier {
       storage.add(value);
     }
     save();
-    notifyListeners();
   }
 }

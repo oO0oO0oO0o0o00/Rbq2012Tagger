@@ -28,8 +28,7 @@ class TheTabbedViewTheme {
             fontSize: fontSize,
             foregroundColor: foregroundColor,
             tabColor: tabColor),
-        contentArea: contentAreaTheme(
-            backgroundColor: backgroundColor, borderColor: backgroundColor),
+        contentArea: contentAreaTheme(backgroundColor: backgroundColor, borderColor: backgroundColor),
         menu: menuTheme(
             hoverColor: highlightedBgColor,
             foregroundColor: foregroundColor,
@@ -76,41 +75,34 @@ class TheTabbedViewTheme {
         textStyle: TextStyle(fontSize: fontSize, color: foregroundColor),
         buttonsOffset: 8,
         padding: const EdgeInsets.fromLTRB(24, vPadding, 8, vPadding),
-        paddingWithoutButton:
-            const EdgeInsets.fromLTRB(24, vPadding, 24, vPadding),
-        hoverButtonBackground: BoxDecoration(
-            color: highlightedBgColor, borderRadius: BorderRadius.circular(4)),
+        paddingWithoutButton: const EdgeInsets.fromLTRB(24, vPadding, 24, vPadding),
+        hoverButtonBackground: BoxDecoration(color: highlightedBgColor, borderRadius: BorderRadius.circular(4)),
         buttonPadding: const EdgeInsets.all(4),
         buttonIconSize: 16,
         decoration: BoxDecoration(border: border, color: tabColor),
-        innerBottomBorder:
-            BorderSide(color: Colors.transparent, width: borderHeight),
+        innerBottomBorder: BorderSide(color: Colors.transparent, width: borderHeight),
         highlightedStatus: TabStatusThemeData(
           normalButtonColor: foregroundColor,
         ),
         selectedStatus: TabStatusThemeData(
             fontColor: selectedTextColor,
             normalButtonColor: foregroundColor,
-            decoration:
-                BoxDecoration(border: border, color: selectedTabColor)));
+            decoration: BoxDecoration(border: border, color: selectedTabColor)));
   }
 
-  static ContentAreaThemeData contentAreaTheme(
-      {required Color borderColor, required Color backgroundColor}) {
+  static ContentAreaThemeData contentAreaTheme({required Color borderColor, required Color backgroundColor}) {
     BorderSide borderSide = BorderSide(width: 1, color: borderColor);
-    BoxBorder border =
-        Border(bottom: borderSide, left: borderSide, right: borderSide);
-    BoxDecoration decoration =
-        BoxDecoration(color: backgroundColor, border: border);
+    BoxBorder border = Border(bottom: borderSide, left: borderSide, right: borderSide);
+    BoxDecoration decoration = BoxDecoration(color: backgroundColor, border: border);
     return ContentAreaThemeData(decoration: decoration);
   }
 
-  static MenuThemeData menuTheme(
+  static TabbedViewMenuThemeData menuTheme(
       {required Color backgroundColor,
       required double fontSize,
       required Color foregroundColor,
       required Color hoverColor}) {
-    return MenuThemeData(
+    return TabbedViewMenuThemeData(
         textStyle: TextStyle(fontSize: fontSize, color: foregroundColor),
         margin: const EdgeInsets.all(8),
         menuItemPadding: const EdgeInsets.all(8),

@@ -1,31 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import 'package:provider/provider.dart';
+import 'package:tabbed_view/tabbed_view.dart';
 import 'package:tagger/model/global/model.dart';
+import 'package:tagger/service/tutorial_service.dart';
+import 'package:tuple/tuple.dart';
+import '../../model/global/batch_action.dart';
+import '../../viewmodel/homepage_viewmodel.dart';
+import '../../model/global/search_options.dart';
 import '../../util/platform.dart';
 import '../../viewmodel/album/album_arguments.dart';
 import '../../viewmodel/album/album_viewmodel.dart';
-import 'package:provider/provider.dart';
-
 import '../../viewmodel/tag_templates_viewmodel.dart';
 import '../commons/dialogs.dart';
+import '../commons/file_conflict_dialog.dart';
+import 'action_icons/action_icon.dart';
+import 'action_icons/filter_icon.dart';
+import 'action_icons/sort_icon.dart';
 import 'album_body.dart';
 import 'album_page_sidebar.dart';
 import 'sidetabs/bulk_tags_view.dart';
 import 'sidetabs/search_view.dart';
-import 'sort_icon.dart';
+import 'sidetabs/sidetab_tooltip.dart';
 import 'sidetabs/tag_templates_card_view.dart';
 
 class AlbumPage extends StatefulWidget {
   final String path;
   final TagTemplatesViewModel tagTemplates;
-  final void Function() onOpened;
+  final HomePageViewModel homePageViewModel;
+  final void Function(String path) onOpened;
   final void Function(BuildContext context) onFailure;
+  final AlbumViewModel Function(String path, String referredBy) getViewModel;
+  final void Function(String? path, String referredBy) releaseAlbumViewModel;
 
   AlbumPage(
-      {Key? key, required AlbumArguments arguments, required this.tagTemplates})
+      {Key? key,
+      required AlbumArguments arguments,
+      required this.tagTemplates,
+      required this.homePageViewModel,
+      required this.getViewModel,
+      required this.onOpened,
+      required this.onFailure,
+      required this.releaseAlbumViewModel})
       : path = arguments.path,
-        onOpened = arguments.onOpened,
-        onFailure = arguments.onFailure,
         super(key: key);
 
   static const routeName = '/album';
@@ -36,9 +54,9 @@ class AlbumPage extends StatefulWidget {
 
 class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
   late final AlbumViewModel viewModel;
+  // Focus node for receiving keyboard shortcuts.
+  late final FocusNode _focus;
   late final _tabController = TabController(length: 3, vsync: this);
-  bool _loadingDB = false;
-  bool _loadingContents = false;
   bool _showSideTab = true;
   int _sideTabIndex = 0;
   final _sideTabKey = GlobalKey();
@@ -47,24 +65,26 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    viewModel = AlbumViewModel(widget.path, tagTemplates: widget.tagTemplates);
-    _loadDB(context);
-    _loadContents(context);
+    _focus = FocusNode(debugLabel: 'albumScope');
+    viewModel = widget.getViewModel(widget.path, widget.path);
+    _load(context);
   }
 
   @override
   void dispose() {
-    viewModel.dispose();
+    _focus.dispose();
+    widget.releaseAlbumViewModel(null, widget.path);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider.value(
-        value: widget.tagTemplates,
+      value: widget.tagTemplates,
+      child: ChangeNotifierProvider.value(
+        value: widget.homePageViewModel,
         child: ChangeNotifierProvider.value(
-            value: viewModel,
-            child: isPC() ? _buildForPC(context) : _buildForMobile(context)),
-      );
+            value: viewModel, builder: (context, child) => isPC() ? _buildForPC(context) : _buildForMobile(context)),
+      ));
 
   Widget _buildForPC(BuildContext context) => Material(
           child: (bool isPC) {
@@ -84,70 +104,82 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
           ],
         );
         // A stack is used to show progress bar above.
+        final listenedViewModel = Provider.of<AlbumViewModel>(context);
+        final body = Focus(
+            focusNode: _focus,
+            autofocus: true,
+            // Keyboard shortcuts (both navigation and tags) are listened here.
+            onKey: (node, e) {
+              // if (e.isAltPressed)
+              if (e is! RawKeyDownEvent) return KeyEventResult.ignored;
+              if (e.logicalKey == LogicalKeyboardKey.delete) {
+                _handleDeleteAction();
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            },
+            child: AlbumBody(key: _bodyKey));
         return Stack(children: [
           // Basically it's Row([side bar, MultiSplitView([side tab, body])]).
           Row(children: [
             AlbumPageSidebar(
               selectedIndex: _sideTabIndex,
               tabIcons: const [
-                Icon(Icons.bookmarks_outlined),
-                Icon(Icons.fact_check_outlined),
-                Icon(Icons.search)
+                Tuple2("templates", Icon(Icons.bookmarks_outlined)),
+                Tuple2("tags of selections", Icon(Icons.fact_check_outlined)),
+                Tuple2("filter", Icon(Icons.search)),
               ],
-              actionIcons: const [SortIcon(offset: Offset(64, 0))],
+              actionIcons: [
+                if (listenedViewModel.controller.selections.isNotEmpty) _buildDeleteIcon(),
+                if (listenedViewModel.filter != null) const FilterIcon(offset: Offset(64, 0)),
+                if (listenedViewModel.controller.selections.isNotEmpty)
+                  ActionIcon(onConfirmed: _applyAction, currentPath: widget.path),
+                const SortIcon(offset: Offset(64, 0))
+              ],
               onSelectSideTab: _onSelectTab,
             ),
             Expanded(
               // `MultiSplitView` does not play well with `Offstage`.
               child: _showSideTab
                   ? MultiSplitView(
-                      children: [sideTab, AlbumBody(key: _bodyKey)],
+                      children: [sideTab, body],
                       initialWeights: const [.2, .8],
                     )
-                  : Stack(children: [
-                      Offstage(offstage: true, child: sideTab),
-                      AlbumBody(key: _bodyKey)
-                    ]),
+                  : Stack(children: [Offstage(offstage: true, child: sideTab), body]),
             ),
           ]),
-          if (_loadingDB || _loadingContents) const LinearProgressIndicator(),
+          if (context.read<AlbumViewModel>().loading) const LinearProgressIndicator(),
         ]);
       }(true));
 
+  Widget _buildDeleteIcon() => SidetabTooltip(
+        message: "delete",
+        child: IconButton(
+          icon: const Icon(Icons.delete_outline),
+          onPressed: _handleDeleteAction,
+        ),
+      );
+
   Widget _buildForMobile(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: Consumer<AlbumViewModel>(
-            builder: (context, viewModel, child) =>
-                Text(viewModel.pathForDisplay)),
-        actions: const [SortIcon()],
+        title: Consumer<AlbumViewModel>(builder: (context, viewModel, child) => Text(viewModel.pathForDisplay)),
+        actions: [ActionIcon(onConfirmed: _applyAction, currentPath: widget.path), const SortIcon()],
       ),
       body: AlbumBody(key: _bodyKey));
 
-  Future<void> _loadContents(BuildContext context) async {
-    if (_loadingContents) return;
-    final album = viewModel;
-    setState(() => _loadingContents = true);
-    await album.loadContents();
-    setState(() => _loadingContents = false);
-  }
-
-  Future<void> _loadDB(BuildContext context) async {
-    final album = viewModel;
-    if (_loadingDB || album.dbReady) return;
-    setState(() => _loadingDB = true);
-    if (!await album.isManaged()) {
+  Future<void> _load(BuildContext context) async {
+    if (viewModel.loading || viewModel.dbReady) return;
+    if (!await viewModel.isManaged()) {
       if (await showConfirmationDialog(context,
-              title: 'Create Album',
-              content:
-                  'The selected folder is currently not an managed album. Create one?') !=
+              title: 'Create Album', content: 'The selected folder is currently not an managed album. Create one?') !=
           true) {
         widget.onFailure(context);
         return;
       }
     }
     await viewModel.openDatabase();
-    widget.onOpened();
-    setState(() => _loadingDB = false);
+    await viewModel.loadContents();
+    widget.onOpened(widget.path);
   }
 
   void _onClickTag(String tag) => viewModel.controller.addTagToSelected(tag);
@@ -168,5 +200,32 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
 
   void _onSetFilter(SearchOptions? filter) {
     viewModel.filter = filter;
+  }
+
+  bool _applyAction(BatchAction action) {
+    if (viewModel.loading) return false;
+    viewModel.performBatchAction(
+      action,
+      getAlbumViewModel: widget.getViewModel,
+      releaseAlbumViewModel: widget.releaseAlbumViewModel,
+      conflictResolver: ((conflicts) => showFileConflictResolvingDialog(context, conflicts)),
+    );
+    if (action.enableMoveCopyAction) {
+      widget.homePageViewModel.addRecent(RecentAlbum(action.path!, lastOpened: DateTime.now(), pinned: false));
+    }
+    return true;
+  }
+
+  Future<void> _handleDeleteAction() async {
+    if (await TutorialService.instance.shouldShow(TutorialService.kDeletionNotice, 2, increase: true)) {
+      await showConfirmationDialog(context,
+          content: "Deleted items would be moved to the recycle folder of the album, "
+              "along with a json file containing their tags. "
+              "You can manage deleted items with the file browser, "
+              "and restore them with scripts.",
+          title: "Deletion...",
+          hasNegativeButton: false);
+    }
+    await viewModel.performDeletion();
   }
 }
