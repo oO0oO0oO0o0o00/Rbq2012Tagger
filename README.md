@@ -24,13 +24,13 @@ Currently still in progress. Not planning to update for the next month as my P0 
 - [x] intersection/union of tags for selected pictures via side tab (viewing and removal)
 - [x] Add comments so that at least I myself can read after a month or so
 - [x] Reconnect the broken tag templates management (open from home page, open in new tab from any opened folder)
-- [ ] (P0, +++) Search and highlight (by name, range of date, included and/or excluded tags)
+- [x] (P0, +++) Search and highlight (by name, range of date, included and/or excluded tags)
   - [ ] (P2, +) Save/load searches
-- [ ] (P1, +) Selection/search -based actions (move/copy to, add/remove tags)
-- [ ] (P2, ++) Advanced searching and actions using JavaScript (or maybe Lua if Flutter's built-in JavaScript is restricted to web views, anyway never bundle a Python or Ruby environment, though I am currently using Python outsides the app for bulk-manipulation based on tags)
+- [x] (P1, +) Selection/search -based actions (move/copy to, add/remove tags)
+- [ ] (P2, ++) ~~Advanced searching and actions using JavaScript~~ Python SDK is enough.
 - [ ] (P2, ++++) Mobile adaptation (will be mainly used for pictures stored in the app's container):
   - [ ] (P2, ++) conditional/responsive UI
   - [ ] (P2, +) tapping and swapping instead of keystrokes
   - [ ] (P3, +) incremental import/export (backup/restore)
 - [ ] (P3, +) Undo/redo stack
-- [ ] (P3, ++) OCR and AI-based tagging via third-party APIs or inference models (preferring the latter, "finally found some practical application for my learnt deep learning stuff dude! but wait I guess I'd give up before reaching this step")
+- [ ] (P3, ++) OCR and AI-based tagging via third-party APIs or inference models
