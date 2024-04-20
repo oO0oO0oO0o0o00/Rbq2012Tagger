@@ -101,9 +101,9 @@ class TagsMgmtPage extends StatelessWidget {
                 viewModel.beginCreateItemAtTheEnd();
               }
             },
-            child: Row(
+            child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.add_circle_outline),
                   SizedBox(width: 12),
                   Text("Add")

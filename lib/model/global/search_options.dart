@@ -25,6 +25,7 @@ class SearchOptions implements NamedConfig {
   static const colXtags = "xtags";
   static const colConditionType = "condition_type";
 
+  @override
   final String name;
   String? byName;
   bool? byNameCase;
@@ -60,6 +61,7 @@ class SearchOptions implements NamedConfig {
         xtags = (jsonDecode(map[colXtags] as String? ?? "[]") as List).map((e) => e as String).toList(),
         conditionType = SearchOptionsConditionType.validate(map[colConditionType] as String?);
 
+  @override
   Map<String, Object?> toMap() => {
         colName: name,
         colByName: byName,

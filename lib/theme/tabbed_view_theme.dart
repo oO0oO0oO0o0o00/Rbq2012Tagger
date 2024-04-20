@@ -7,11 +7,11 @@ class TheTabbedViewTheme {
   static TabbedViewThemeData build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.primaryColor;
-    final fontSize = theme.textTheme.bodyText1?.fontSize ?? 16;
+    final fontSize = theme.textTheme.bodyLarge?.fontSize ?? 16;
     Color foregroundColor = theme.hintColor;
     Color highlightedBgColor = _saturationBlend(primaryColor, .2);
     Color backgroundColor = _saturationBlend(primaryColor, .06);
-    Color selectedTextColor = theme.textTheme.bodyText1?.color ?? Colors.black;
+    Color selectedTextColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     Color selectedTabColor = _saturationBlend(primaryColor, .02);
     final tabColor = _saturationBlend(primaryColor, .1);
     return TabbedViewThemeData(

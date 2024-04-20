@@ -29,7 +29,7 @@ class FilterTagsView extends StatelessWidget {
         padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
         width: double.infinity,
         decoration: BoxDecoration(
-            border: Border.all(color: theme.backgroundColor),
+            border: Border.all(color: theme.colorScheme.background),
             color: theme.hoverColor),
         child: Column(children: [
           Container(

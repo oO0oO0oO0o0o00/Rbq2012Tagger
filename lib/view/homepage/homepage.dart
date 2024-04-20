@@ -1,4 +1,3 @@
-import 'package:filepicker_windows/filepicker_windows.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -71,7 +70,7 @@ class MyHomePage extends StatelessWidget {
   Widget _buildForPC(BuildContext context) {
     return Material(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text(title, style: Theme.of(context).textTheme.headline2),
+      Text(title, style: Theme.of(context).textTheme.displayMedium),
       const SizedBox(height: 48),
       LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) =>
@@ -98,7 +97,7 @@ class MyHomePage extends StatelessWidget {
                 onPressed: () => _selectAndOpen(context),
                 child: const Text("Open Folder..."))),
         const SizedBox(height: 24),
-        Text('Recent', style: Theme.of(context).textTheme.headline4),
+        Text('Recent', style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 12),
         Consumer<HomePageViewModel>(
             builder: (consumerContext, viewModel, child) =>

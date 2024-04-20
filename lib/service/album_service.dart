@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../model/model.dart';
 import 'dart:io';
 import 'package:path/path.dart' as path;
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../util/image_util.dart';

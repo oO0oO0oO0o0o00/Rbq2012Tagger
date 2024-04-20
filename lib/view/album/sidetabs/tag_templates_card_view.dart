@@ -24,7 +24,7 @@ class TagTemplatesCardView extends StatelessWidget {
       const SizedBox(height: 24),
       TagTemplatesView(onClickTag: onClickTag),
       const SizedBox(height: 16),
-      Column(mainAxisSize: MainAxisSize.min, children: const [
+      const Column(mainAxisSize: MainAxisSize.min, children: [
         _KeystrokesNoteView(
             keyStrokes: [LogicalKeyboardKey.alt], text: "removal mode"),
         _KeystrokesNoteView(

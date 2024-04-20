@@ -108,8 +108,8 @@ class _HostState extends State<Host> {
     // `TabbedView` unexpectedly overrides text style. Here we restore.
     final textStyle = TextStyle(
         decoration: TextDecoration.none,
-        color: Theme.of(context).textTheme.bodyText1?.color,
-        fontSize: Theme.of(context).textTheme.bodyText1?.fontSize);
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+        fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize);
     return DefaultTextStyle(
         child: CallbackShortcuts(bindings: {
           // `Ctrl + N` => new tab.
