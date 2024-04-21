@@ -103,22 +103,9 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
             SearchView(onSetFilter: _onSetFilter)
           ],
         );
+        final body = AlbumBody(key: _bodyKey);
         // A stack is used to show progress bar above.
         final listenedViewModel = Provider.of<AlbumViewModel>(context);
-        final body = Focus(
-            focusNode: _focus,
-            autofocus: true,
-            // Keyboard shortcuts (both navigation and tags) are listened here.
-            onKey: (node, e) {
-              // if (e.isAltPressed)
-              if (e is! RawKeyDownEvent) return KeyEventResult.ignored;
-              if (e.logicalKey == LogicalKeyboardKey.delete) {
-                _handleDeleteAction();
-                return KeyEventResult.handled;
-              }
-              return KeyEventResult.ignored;
-            },
-            child: AlbumBody(key: _bodyKey));
         return Stack(children: [
           // Basically it's Row([side bar, MultiSplitView([side tab, body])]).
           Row(children: [

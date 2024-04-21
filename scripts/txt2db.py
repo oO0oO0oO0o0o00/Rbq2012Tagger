@@ -1,7 +1,6 @@
 from collections import Counter
 from pathlib import Path
-import sqlite3
-
+from api.db import AlbumDB
 
 k_escape_char = '\\'
 k_escaped_chars = set(x for x in '()[]\\')
@@ -50,37 +49,20 @@ def save_txt(path, tags, sep=', '):
         fp.write(data)
 
 
-def open_db(path: Path) -> sqlite3.Connection:
-    db_path = path / ".rbq2012.tagger/album.db"
-    if not db_path.exists():
-        raise RuntimeError("Create album with the App first.")
-    return sqlite3.connect(db_path)
-
-
-def save_db(db: sqlite3.Cursor, path, tags):
-    for tag in tags:
-        db.execute("INSERT OR IGNORE INTO tagged(name, tag) values (?, ?)", [path.name, tag])
-
-
-def load_db(db: sqlite3.Cursor, path):
-    res = db.execute("SELECT tag FROM tagged WHERE name = ?", [path.name])
-    return res.fetchall()
-
-
 def txt2db(path):
-    with open_db(path) as db:
+    with AlbumDB(path) as db:
         cursor = db.cursor()
         for file in path.glob("*.txt"):
-            save_db(cursor, next(x for x in path.glob(
+            db.insert(cursor, next(x for x in path.glob(
                 f"{file.stem}.*") if x.suffix != ".txt"), load_txt(file))
         db.commit()
 
 
 def db2txt(path):
-    with open_db(path) as db:
+    with AlbumDB(path) as db:
         cursor = db.cursor()
         for file in path.glob("*.txt"):
-            save_txt(file, load_db(cursor, next(x for x in path.glob(
+            save_txt(file, db.fetch(cursor, next(x for x in path.glob(
                 f"{file.stem}.*") if x.suffix != ".txt")))
 
 

@@ -48,3 +48,8 @@ app.*.map.json
 # app's configuration file (linked to Debug folder)
 app.db
 .packages (2)
+
+# test files
+scripts/configs/
+scripts/*.db
+scripts/*.db-journal
