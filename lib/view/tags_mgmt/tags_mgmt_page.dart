@@ -19,17 +19,12 @@ class TagsMgmtPage extends StatelessWidget {
 
   static const routeName = '/tags';
 
-  Future<bool> _dealWithPreviousEditingOrCancel(
-      BuildContext context, TagTemplatesViewModel viewModel) async {
-    if (viewModel.editingItem == null ||
-        viewModel.editingItem?.previous.name ==
-            viewModel.editingItem?.current.name) {
+  Future<bool> _dealWithPreviousEditingOrCancel(BuildContext context, TagTemplatesViewModel viewModel) async {
+    if (viewModel.editingItem == null || viewModel.editingItem?.previous.name == viewModel.editingItem?.current.name) {
       return true;
     }
     final result = await showConfirmationDialog(context,
-        content: "You are editing another tag. Save?",
-        hasNeutralButton: true,
-        escAsNeutral: true);
+        content: "You are editing another tag. Save?", hasNeutralButton: true, escAsNeutral: true);
     if (result == null) return false;
     if (result && !await viewModel.commitEditing()) return false;
     return true;
@@ -40,19 +35,18 @@ class TagsMgmtPage extends StatelessWidget {
     return isPC()
         ? Material(
             child: Center(
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                child: Column(mainAxisSize: MainAxisSize.max, children: [
             ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 800),
                 child: Row(children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back,
-                        color: Theme.of(context).hintColor),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).hintColor),
                     iconSize: 36,
                     onPressed: onClose,
                   ),
                 ])),
             const SizedBox(height: 48),
-            _buildBody()
+            Expanded(child: _buildBody())
           ])))
         : Scaffold(
             appBar: AppBar(
@@ -68,26 +62,27 @@ class TagsMgmtPage extends StatelessWidget {
             value: tagTemplates,
             builder: (context, child) => Consumer<TagTemplatesViewModel>(
                 builder: (context, viewModel, child) => Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildList(viewModel, context),
-                          _buildAddButton(context)
-                        ]))));
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildList(viewModel, context),
+                        _buildAddButton(context),
+                      ],
+                    ))));
   }
 
   Widget _buildList(TagTemplatesViewModel viewModel, BuildContext context) {
-    return ReorderableListView.builder(
+    return Expanded(
+        child: ReorderableListView.builder(
       itemBuilder: (context, index) => TagItemView(
           viewModel: viewModel,
           item: viewModel.getItem(index),
           handlePreviousEditing: _dealWithPreviousEditingOrCancel),
       itemCount: viewModel.getItemsCount(),
       onReorder: (old, newIndex) {
-        Provider.of<TagTemplatesViewModel>(context, listen: false)
-            .move(old, newIndex);
+        Provider.of<TagTemplatesViewModel>(context, listen: false).move(old, newIndex);
       },
-      shrinkWrap: true,
-    );
+    ));
   }
 
   Widget _buildAddButton(BuildContext context) {
@@ -95,18 +90,15 @@ class TagsMgmtPage extends StatelessWidget {
         height: 48,
         child: TextButton(
             onPressed: () async {
-              final viewModel =
-                  Provider.of<TagTemplatesViewModel>(context, listen: false);
+              final viewModel = Provider.of<TagTemplatesViewModel>(context, listen: false);
               if (await _dealWithPreviousEditingOrCancel(context, viewModel)) {
                 viewModel.beginCreateItemAtTheEnd();
               }
             },
-            child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_circle_outline),
-                  SizedBox(width: 12),
-                  Text("Add")
-                ])));
+            child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.add_circle_outline),
+              SizedBox(width: 12),
+              Text("Add"),
+            ])));
   }
 }
