@@ -20,8 +20,7 @@ class BulkTagsView extends StatefulWidget {
   State<BulkTagsView> createState() => _BulkTagsViewState();
 }
 
-class _BulkTagsViewState extends State<BulkTagsView>
-    with AutomaticKeepAliveClientMixin {
+class _BulkTagsViewState extends State<BulkTagsView> with AutomaticKeepAliveClientMixin {
   /// Dense state required by [ToggleButtons].
   final isSelected = [true, false];
 
@@ -29,8 +28,7 @@ class _BulkTagsViewState extends State<BulkTagsView>
   Widget build(BuildContext context) {
     super.build(context);
     return Consumer<TagTemplatesViewModel>(
-      builder: (context, _, child) =>
-          Consumer<AlbumViewModel>(builder: (context, albumViewModel, child) {
+      builder: (context, _, child) => Consumer<AlbumViewModel>(builder: (context, albumViewModel, child) {
         final theme = Theme.of(context);
         final selections = albumViewModel.controller.selections;
         return ScalableCardView(
@@ -38,27 +36,24 @@ class _BulkTagsViewState extends State<BulkTagsView>
               ? const [Text("(no pictures selected)")]
               // Why 121? It's magic.
               : selections.length > 121
-                  ? const [
-                      Text("(too many selected, use Filter & Actions instead)")
-                    ]
+                  ? const [Text("(too many selected, use Filter & Actions instead)")]
                   : _buildBody(theme, constraint, albumViewModel),
         );
       }),
     );
   }
 
-  List<Widget> _buildBody(ThemeData theme, BoxConstraints constraint,
-      AlbumViewModel albumViewModel) {
+  List<Widget> _buildBody(ThemeData theme, BoxConstraints constraint, AlbumViewModel albumViewModel) {
     return [
       Text("Tags of Selections", style: theme.textTheme.titleLarge),
       ToggleButtons(
-        borderColor: theme.toggleableActiveColor,
-        color: theme.toggleableActiveColor,
-        selectedBorderColor: theme.toggleableActiveColor,
+        // borderColor: theme.toggleableActiveColor,
+        // color: theme.toggleableActiveColor,
+        // selectedBorderColor: theme.toggleableActiveColor,
         splashColor: theme.splashColor,
         constraints: const BoxConstraints(minWidth: 84, minHeight: 28),
         borderRadius: const BorderRadius.all(Radius.circular(4)),
-        fillColor: theme.toggleableActiveColor,
+        // fillColor: theme.toggleableActiveColor,
         selectedColor: theme.dialogBackgroundColor,
         children: const [
           Text("Intersection"),
@@ -75,15 +70,12 @@ class _BulkTagsViewState extends State<BulkTagsView>
       ConstrainedBox(
         constraints: BoxConstraints(minHeight: constraint.maxHeight / 2),
         child: Tags(
-          itemCount: albumViewModel.controller
-              .getTagsOfSelectedItemsCount(isSelected[0]),
+          itemCount: albumViewModel.controller.getTagsOfSelectedItemsCount(isSelected[0]),
           itemBuilder: (int index) {
-            final item = albumViewModel.controller
-                .getTagOfSelectedItemsAt(index, isSelected[0]);
+            final item = albumViewModel.controller.getTagOfSelectedItemsAt(index, isSelected[0]);
             return TagView(
                 item: item,
-                onClose: (String tag) =>
-                    albumViewModel.controller.removeTagFromSelected(tag),
+                onClose: (String tag) => albumViewModel.controller.removeTagFromSelected(tag),
                 showShortcuts: true);
           },
         ),

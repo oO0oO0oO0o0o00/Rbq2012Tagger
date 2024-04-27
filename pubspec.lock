@@ -208,7 +208,6 @@ packages:
       sha256: "9ae5afc8906f16cce91fc75695d9478ce107c230011651542f1229b784192b2b"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.4"
     version: "2.1.3"
   filesize:
     dependency: "direct main"
@@ -243,10 +242,10 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_lints
-      sha256: b543301ad291598523947dc534aaddc5aaad597b709d2426d3a0e0d44c5cb493
+      sha256: "9e8c3858111da373efc5aa341de011d9bd23e2c5c5e0c62bccf32438e192d7b1"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.0.4"
+    version: "3.0.2"
   flutter_tags:
     dependency: "direct main"
     description:
@@ -320,10 +319,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: "910f85bce16fb5c6f614e117efa303e85a1731bb0081edf3604a2ae6e9a3cc91"
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.17.0"
+    version: "0.19.0"
   io:
     dependency: transitive
     description:
@@ -348,6 +347,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.8.1"
+  just_the_tooltip:
+    dependency: "direct main"
+    description:
+      name: just_the_tooltip
+      sha256: "7a081133d57285bfb41b331f411006d57b433d7b35772e6155745f6a7a09cb82"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.0.12"
   leak_tracker:
     dependency: transitive
     description:
@@ -376,10 +383,10 @@ packages:
     dependency: transitive
     description:
       name: lints
-      sha256: a2c3d198cb5ea2e179926622d433331d8b58374ab8f29cdda6e863bd62fd369c
+      sha256: cbf8d4b858bb0134ef3ef87841abdf8d63bfc255c266b7bf6b39daa1085c4290
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.0.1"
+    version: "3.0.0"
   logging:
     dependency: transitive
     description:
@@ -424,10 +431,10 @@ packages:
     dependency: "direct main"
     description:
       name: multi_split_view
-      sha256: cd01f20971c58522fd0e1ff80484db174a899c05ce0943a6e6b7880dc91eef90
+      sha256: "9aec958f9c5e408e297cb36dad32c09d5ca3028e4a016d50084ec609ef24e029"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.13.0"
+    version: "2.0.0"
   nested:
     dependency: transitive
     description:
@@ -693,11 +700,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: "0a989dc7ca2bb51eac91e8fd00851297cfffd641aa7538b165c62637ca0eaa4a"
+      sha256: "0eaf06e3446824099858367950a813472af675116bf63f008a4c2a75ae13e9cb"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "4.1.4"
-    version: "5.4.0"
+    version: "5.5.0"
   yaml:
     dependency: transitive
     description:

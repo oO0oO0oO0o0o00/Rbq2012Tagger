@@ -126,14 +126,17 @@ class AlbumState extends State<AlbumPage> with SingleTickerProviderStateMixin {
               onSelectSideTab: _onSelectTab,
             ),
             Expanded(
-              // `MultiSplitView` does not play well with `Offstage`.
-              child: _showSideTab
-                  ? MultiSplitView(
-                      children: [sideTab, body],
-                      initialWeights: const [.2, .8],
-                    )
-                  : Stack(children: [Offstage(offstage: true, child: sideTab), body]),
-            ),
+                // `MultiSplitView` does not play well with `Offstage`.
+                child:
+                    // _showSideTab
+                    // ?
+                    MultiSplitView(
+              initialAreas: [Area(weight: 0.2), Area(weight: 0.8)],
+              children: [sideTab, body],
+            )
+                // :
+                // Stack(children: [Offstage(offstage: true, child: sideTab), body]),
+                ),
           ]),
           if (context.read<AlbumViewModel>().loading) const LinearProgressIndicator(),
         ]);
